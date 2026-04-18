@@ -28,6 +28,7 @@ When deployed via Intune, this script provides visual feedback to users during t
 | `MONITOR_TIMEOUT_MINUTES` | 60 | Maximum time to wait for all apps |
 | `POLL_INTERVAL_SECONDS` | 2 | How often to check for new installations |
 | `DIALOG_BIN` | `/usr/local/bin/dialog` | Path to Swift Dialog binary |
+| `SLEEP_SECONDS` | 5 | Sleep interval during desktop/dialog wait phases |
 | `logDir` | `/Library/Logs/Microsoft/IntuneScripts/Swift Dialog` | Log file location |
 
 ### Monitored Applications
@@ -53,7 +54,7 @@ The script monitors for these Microsoft applications:
 ```text
 ┌─────────────────────────────────────────┐
 │  1. Check if onboarding already done    │
-│     (exit if /onboardingComplete exists)│
+│     (exit if logDir/onboardingComplete) │
 └───────────────┬─────────────────────────┘
                 ▼
 ┌─────────────────────────────────────────┐
@@ -96,14 +97,16 @@ This dual-check approach handles both drag-and-drop installs and PKG-based insta
 
 ## UI Features
 
-- **Blurred fullscreen overlay** - Prevents user interaction during setup
-- **Always on top** - Ensures visibility
+- **Blurred screen overlay** (800×800 window with `--blurscreen`) - Prevents user interaction during setup
+- **Always on top** (`--ontop`) - Ensures visibility
+- **Microsoft logo icon** (120px, decoded from embedded base64 to `/var/tmp/logo.png`)
 - **Real-time progress bar** - Shows X of Y apps installed
 - **Per-app status indicators**:
   - `pending` - Waiting for installation
   - `success` - Application detected
   - `error` - Timeout reached without detection
-- **Embedded Microsoft logo** - No external icon file dependency
+- **Dialog title:** "Setting Up Your Mac"
+- **Dialog message:** "Please wait while we configure your device with the required applications. This process runs automatically in the background."
 
 ## Logging
 
@@ -122,7 +125,7 @@ All output is logged to:
 
 | Condition | Behavior |
 | --------- | -------- |
-| Onboarding already complete | Exits immediately (flag file exists) |
+| Onboarding already complete | Exits immediately (`$logDir/onboardingComplete` exists) |
 | Desktop timeout | Exits with error code 1 |
 | Dialog binary timeout | Exits with error code 1 |
 | All apps detected | Shows success, enables Continue button |

@@ -28,7 +28,7 @@
                 "settingInstanceTemplateReference": null,
                 "choiceSettingValue": {
                     "settingValueTemplateReference": null,
-                    "value": "com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy_2",
+                    "value": "com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy_0",
                     "children": []
                 }
             }

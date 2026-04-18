@@ -2,9 +2,9 @@
 
 ## Configuration Documentation
 
-**Generated:** January 09, 2026
+**Generated:** April 18, 2026
 
-**Total Artifacts:** 29
+**Total Artifacts:** 37
 
 # About Intune My Macs
 
@@ -32,12 +32,12 @@ Click any reference ID to jump to detailed configuration.
 | Ref | Type | Settings Count |
 |-----|------|----------------|
 | [app-utl-001-swift-dialog](#app-utl-001-swift-dialog-package) | Package | 5 |
-| [app-utl-002-dialog-onboarding](#app-utl-002-dialog-onboarding-package) | Package | 7 |
 | [cat-sys-100-compatibility-checker](#cat-sys-100-compatibility-checker-customattribute) | CustomAttribute | 1 |
 | [cat-sys-101-intune-agent-version](#cat-sys-101-intune-agent-version-customattribute) | CustomAttribute | 1 |
 | [cfg-idp-001-platform-sso](#cfg-idp-001-platform-sso-policy) | Policy | 18 |
 | [cfg-sec-001-login-window](#cfg-sec-001-login-window-customconfig) | CustomConfig | 4 |
 | [cfg-sec-002-screensaver-idle](#cfg-sec-002-screensaver-idle-customconfig) | CustomConfig | 1 |
+| [cfg-sys-100-wallpaper-pppc](#cfg-sys-100-wallpaper-pppc-customconfig) | CustomConfig | 1 |
 | [cmp-cmp-001-macos-baseline](#cmp-cmp-001-macos-baseline-compliance) | Compliance | 12 |
 | [pol-app-100-office](#pol-app-100-office-policy) | Policy | 15 |
 | [pol-app-101-edge-level1](#pol-app-101-edge-level1-policy) | Policy | 22 |
@@ -52,13 +52,22 @@ Click any reference ID to jump to detailed configuration.
 | [pol-sys-102-power](#pol-sys-102-power-policy) | Policy | 5 |
 | [pol-sys-103-software-update](#pol-sys-103-software-update-policy) | Policy | 9 |
 | [pol-sys-104-ddm-passcode](#pol-sys-104-ddm-passcode-policy) | Policy | 11 |
-| [pol-sys-105-enrollment-restriction](#pol-sys-105-enrollment-restriction-policy) | Policy | 6 |
+| [pol-sys-105-enrollment-restriction](#pol-sys-105-enrollment-restriction-enrollmentrestriction) | EnrollmentRestriction | 0 |
+| [pol-sys-105-enrollment-restriction](#pol-sys-105-enrollment-restriction-enrollmentrestriction) | EnrollmentRestriction | 0 |
 | [scr-app-100-install-company-portal](#scr-app-100-install-company-portal-script) | Script | 4 |
+| [scr-app-101-install-edge](#scr-app-101-install-edge-script) | Script | 4 |
 | [scr-app-102-install-remote-help](#scr-app-102-install-remote-help-script) | Script | 4 |
 | [scr-app-103-install-intunelogwatch](#scr-app-103-install-intunelogwatch-script) | Script | 4 |
+| [scr-app-104-install-M365Apps](#scr-app-104-install-m365apps-script) | Script | 4 |
+| [scr-app-105-install-windows-app](#scr-app-105-install-windows-app-script) | Script | 4 |
+| [scr-app-106-install-teams](#scr-app-106-install-teams-script) | Script | 4 |
+| [scr-app-107-M365copilot](#scr-app-107-m365copilot-script) | Script | 4 |
 | [scr-sec-100-install-escrow-buddy](#scr-sec-100-install-escrow-buddy-script) | Script | 4 |
 | [scr-sys-100-device-rename](#scr-sys-100-device-rename-script) | Script | 4 |
 | [scr-sys-101-configure-dock](#scr-sys-101-configure-dock-script) | Script | 4 |
+| [scr-sys-102-set-wallpaper](#scr-sys-102-set-wallpaper-script) | Script | 4 |
+| [scr-utl-100-dialog-onboarding](#scr-utl-100-dialog-onboarding-script) | Script | 4 |
+| [wallpaper](#wallpaper-resource) | Resource | 0 |
 
 # Detailed Configuration
 
@@ -76,24 +85,6 @@ Installs Swift Dialog v2.5.6, a native macOS application for displaying rich, in
 | `Publisher` | `Bart Reardon` |
 | `MinimumSupportedOperatingSystem` | `v13_0` |
 | `IgnoreVersionDetection` | `true` |
-
-
-### app-utl-002-dialog-onboarding (Package)
-
-Displays an interactive Swift Dialog onboarding splash screen showing real-time progress while automatically installing essential Microsoft applications: Company Portal, Office 365, Microsoft Edge, Microsoft 365 Copilot, and Windows App. Pre-install script waits for Swift Dialog binary availability (20 min timeout), and post-install script executes bundled installation scripts in parallel for each application.
-
-**Source:** `apps/app-utl-002-dialog-onboarding.pkg`  
-**Settings:** 7
-
-| Key | Value |
-|-----|-------|
-| `PrimaryBundleId` | `com.intune.swiftdialog` |
-| `PrimaryBundleVersion` | `1.6` |
-| `Publisher` | `Microsoft` |
-| `MinimumSupportedOperatingSystem` | `v13_0` |
-| `IgnoreVersionDetection` | `true` |
-| `PreInstallScript` | `apps/app-utl-002-dialog-onboarding_pre.sh` |
-| `PostInstallScript` | `apps/app-utl-002-dialog-onboarding_post.sh` |
 
 
 ### cat-sys-100-compatibility-checker (CustomAttribute)
@@ -124,7 +115,7 @@ Returns the version of the Microsoft Intune Agent (Sidecar) installed on the Mac
 
 Platform Single Sign-On (SSO) configuration for Microsoft Entra ID on macOS.
 
-**Source:** `configurations/entra/cfg-idp-001-platform-sso.json`  
+**Source:** `configurations\entra\cfg-idp-001-platform-sso.json`  
 **Settings:** 18
 
 | Key | Value |
@@ -153,7 +144,7 @@ Platform Single Sign-On (SSO) configuration for Microsoft Entra ID on macOS.
 
 Essential login window security configuration for macOS devices. Disables FileVault auto-login to ensure users must explicitly authenticate, blocks external account authentication for tighter access control, and prevents administrators from disabling managed preferences to maintain security policy enforcement.
 
-**Source:** `configurations/intune/cfg-sec-001-login-window.mobileconfig`  
+**Source:** `configurations\intune\cfg-sec-001-login-window.mobileconfig`  
 **Settings:** 4
 
 | Key | Value |
@@ -168,7 +159,7 @@ Essential login window security configuration for macOS devices. Disables FileVa
 
 Configures screensaver idle time (10 minutes) to address Mac Evaluation Utility warning about unmanaged screensaver idle time settings. This legacy setting requires mobileconfig format as it's not available in Settings Catalog. Works in conjunction with POL-SEC-005 (Screensaver Security) which handles password requirements and other modern screensaver settings via Settings Catalog.
 
-**Source:** `configurations/intune/cfg-sec-002-screensaver-idle.mobileconfig`  
+**Source:** `configurations\intune\cfg-sec-002-screensaver-idle.mobileconfig`  
 **Settings:** 1
 
 | Key | Value |
@@ -176,11 +167,23 @@ Configures screensaver idle time (10 minutes) to address Mac Evaluation Utility 
 | `com.apple.screensaver.idleTime` | `600` |
 
 
+### cfg-sys-100-wallpaper-pppc (CustomConfig)
+
+Pre-authorizes the Intune agent and osascript to send Apple Events to Finder for setting the desktop wallpaper. Required to avoid TCC consent prompts when the wallpaper script (SCR-SYS-102) runs on macOS 14+ devices.
+
+**Source:** `configurations\intune\cfg-sys-100-wallpaper-pppc.mobileconfig`  
+**Settings:** 1
+
+| Key | Value |
+|-----|-------|
+| `com.apple.TCC.configuration-profile-policy.Services` | `complex:dict` |
+
+
 ### cmp-cmp-001-macos-baseline (Compliance)
 
 Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum macOS 15.0. Gatekeeper configuration handled separately via configuration policy.
 
-**Source:** `configurations/intune/cmp-cmp-001-macos-baseline.json`  
+**Source:** `configurations\intune\cmp-cmp-001-macos-baseline.json`  
 **Settings:** 12
 
 | Key | Value |
@@ -203,12 +206,12 @@ Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum 
 
 Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activation, and Outlook experience settings.
 
-**Source:** `configurations/intune/pol-app-100-office.json`  
+**Source:** `configurations\intune\pol-app-100-office.json`  
 **Settings:** 15
 
 | Key | Value |
 |-----|-------|
-| `com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy` | `1` |
+| `com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy` | `0` |
 | `com.apple.managedclient.preferences_updatedeadline.daysbeforeforcedquit` | `3` |
 | `com.apple.managedclient.preferences_disableinsidercheckbox` | `True` |
 | `com.apple.managedclient.preferences_howtocheck` | `0` |
@@ -229,7 +232,7 @@ Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activ
 
 Enhanced basic browser configuration for Microsoft Edge addressing gap analysis findings (Certificate management, network policies, system integration)
 
-**Source:** `configurations/Secure Enterprise Browser/pol-app-101-edge-level1.json`  
+**Source:** `configurations\Secure Enterprise Browser\pol-app-101-edge-level1.json`  
 **Settings:** 22
 
 | Key | Value |
@@ -262,7 +265,7 @@ Enhanced basic browser configuration for Microsoft Edge addressing gap analysis 
 
 Configures FileVault disk encryption on macOS devices during Setup Assistant with recovery key escrow.
 
-**Source:** `configurations/intune/pol-sec-001-filevault.json`  
+**Source:** `configurations\intune\pol-sec-001-filevault.json`  
 **Settings:** 9
 
 | Key | Value |
@@ -280,7 +283,9 @@ Configures FileVault disk encryption on macOS devices during Setup Assistant wit
 
 ### pol-sec-002-firewall (Policy)
 
-**Source:** `configurations/intune/pol-sec-002-firewall.json`  
+Enables macOS firewall and prevents users from accessing and modifying firewall settings through System Preferences, ensuring firewall configuration remains under IT control.
+
+**Source:** `configurations\intune\pol-sec-002-firewall.json`  
 **Settings:** 2
 
 | Key | Value |
@@ -293,7 +298,7 @@ Configures FileVault disk encryption on macOS devices during Setup Assistant wit
 
 Comprehensive Gatekeeper and system policy security configuration for macOS devices. Enables application security assessment, allows identified developers while maintaining security, enables XProtect malware upload for threat intelligence, and prevents users from overriding these critical security policies through system preferences.
 
-**Source:** `configurations/intune/pol-sec-003-gatekeeper.json`  
+**Source:** `configurations\intune\pol-sec-003-gatekeeper.json`  
 **Settings:** 4
 
 | Key | Value |
@@ -306,19 +311,21 @@ Comprehensive Gatekeeper and system policy security configuration for macOS devi
 
 ### pol-sec-004-guest-account (Policy)
 
-**Source:** `configurations/intune/pol-sec-004-guest-account.json`  
+Disables guest account access to enhance security on managed macOS devices. Guest accounts can bypass security policies and provide unauthorized access to the system, making this configuration essential for enterprise security.
+
+**Source:** `configurations\intune\pol-sec-004-guest-account.json`  
 **Settings:** 1
 
 | Key | Value |
 |-----|-------|
-| `com.apple.mcx_DisableGuestAccount` | `True` |
+| `com.apple.mcx_disableguestaccount` | `True` |
 
 
 ### pol-sec-005-screensaver (Policy)
 
 Configures comprehensive screensaver security settings to protect unattended devices. Sets screensaver to activate after 10 minutes of inactivity (user setting), requires password authentication after 60 seconds of screensaver activation, sets login window idle timeout to 20 minutes, and enforces the Flurry screensaver module for both system and user contexts.
 
-**Source:** `configurations/intune/pol-sec-005-screensaver.json`  
+**Source:** `configurations\intune\pol-sec-005-screensaver.json`  
 **Settings:** 6
 
 | Key | Value |
@@ -335,7 +342,7 @@ Configures comprehensive screensaver security settings to protect unattended dev
 
 Comprehensive security policy for macOS devices that restricts various system features and applications to enhance enterprise security. Disables AirDrop, Activity Continuation, Game Center, cloud services, App Store, and other potentially risky features while maintaining core business functionality.
 
-**Source:** `configurations/intune/pol-sec-006-restrictions.json`  
+**Source:** `configurations\intune\pol-sec-006-restrictions.json`  
 **Settings:** 80
 
 | Key | Value |
@@ -397,7 +404,7 @@ Comprehensive security policy for macOS devices that restricts various system fe
 | `com.apple.applicationaccess_allownotestranscription` | `False` |
 | `com.apple.applicationaccess_allownotestranscriptionsummary` | `False` |
 | `com.apple.applicationaccess_allowpasscodemodification` | `True` |
-| `com.apple.applicationaccess_allowpasswordautofill` | `False` |
+| `com.apple.applicationaccess_allowpasswordautofill` | `True` |
 | `com.apple.applicationaccess_allowpasswordproximityrequests` | `False` |
 | `com.apple.applicationaccess_allowpasswordsharing` | `False` |
 | `com.apple.applicationaccess_allowprintersharingmodification` | `True` |
@@ -419,14 +426,14 @@ Comprehensive security policy for macOS devices that restricts various system fe
 | `com.apple.applicationaccess_allowwritingtools` | `False` |
 | `com.apple.applicationaccess_forcebypassscreencapturealert` | `False` |
 | `com.apple.applicationaccess_forceondeviceonlydictation` | `True` |
-| `com.apple.applicationaccess_safariallowautofill` | `False` |
+| `com.apple.applicationaccess_safariallowautofill` | `True` |
 
 
 ### pol-sys-100-ntp (Policy)
 
 Configures macOS devices to synchronize time with Apple's official time servers (time.apple.com) to ensure accurate system time across all managed devices. Essential for security features, certificate validation, and consistent logging.
 
-**Source:** `configurations/intune/pol-sys-100-ntp.json`  
+**Source:** `configurations\intune\pol-sys-100-ntp.json`  
 **Settings:** 1
 
 | Key | Value |
@@ -436,7 +443,9 @@ Configures macOS devices to synchronize time with Apple's official time servers 
 
 ### pol-sys-101-login-items (Policy)
 
-**Source:** `configurations/intune/pol-sys-101-login-items.json`  
+Configures approved login items and background processes for macOS devices. Allows specific applications (Palo Alto and Microsoft) to run background services by whitelisting their team identifiers, ensuring only trusted applications can automatically start at login.
+
+**Source:** `configurations\intune\pol-sys-101-login-items.json`  
 **Settings:** 8
 
 | Key | Value |
@@ -455,7 +464,7 @@ Configures macOS devices to synchronize time with Apple's official time servers 
 
 Configures power management and energy saver settings for macOS devices. Sets display sleep to 5 minutes and system sleep to 10 minutes for both desktop (AC power) and portable devices. Enables Wake on LAN for desktop computers to allow network-based device management and remote wake capabilities.
 
-**Source:** `configurations/intune/pol-sys-102-power.json`  
+**Source:** `configurations\intune\pol-sys-102-power.json`  
 **Settings:** 5
 
 | Key | Value |
@@ -471,7 +480,7 @@ Configures power management and energy saver settings for macOS devices. Sets di
 
 Manages macOS software updates with automatic installation at 1:00 AM (3-day delay for latest updates), enables standard user OS updates, automatic download/install of OS and security updates, enables notifications and Rapid Security Response (RSR) updates for immediate threat mitigation.
 
-**Source:** `configurations/intune/pol-sys-103-software-update.json`  
+**Source:** `configurations\intune\pol-sys-103-software-update.json`  
 **Settings:** 9
 
 | Key | Value |
@@ -491,7 +500,7 @@ Manages macOS software updates with automatic installation at 1:00 AM (3-day del
 
 Enforces passcode requirements including length, complexity, failed attempts, and expiration.
 
-**Source:** `configurations/intune/pol-sys-104-ddm-passcode.json`  
+**Source:** `configurations\intune\pol-sys-104-ddm-passcode.json`  
 **Settings:** 11
 
 | Key | Value |
@@ -509,19 +518,24 @@ Enforces passcode requirements including length, complexity, failed attempts, an
 | `passcode_requirepasscode` | `True` |
 
 
-### pol-sys-105-enrollment-restriction (Policy)
+### pol-sys-105-enrollment-restriction (EnrollmentRestriction)
+
+Controls macOS device enrollment settings and restrictions for managed devices. Allows both corporate and personal device enrollment. Use compliance policies for minimum OS version enforcement.
+
+**Source:** `configurations\intune\pol-sys-105-enrollment-restriction.json`  
+**Settings:** 0
+
+_No payload settings discovered_
+
+
+### pol-sys-105-enrollment-restriction (EnrollmentRestriction)
+
+Controls macOS device enrollment settings and restrictions for managed devices. Allows both corporate and personal device enrollment. Use compliance policies for minimum OS version enforcement.
 
 **Source:** `configurations/intune/pol-sys-105-enrollment-restriction.json`  
-**Settings:** 6
+**Settings:** 0
 
-| Key | Value |
-|-----|-------|
-| `platformRestriction.platformBlocked` | `False` |
-| `platformRestriction.personalDeviceEnrollmentBlocked` | `False` |
-| `platformRestriction.osMinimumVersion` | `15.0` |
-| `platformRestriction.osMaximumVersion` | `` |
-| `platformRestriction.blockedManufacturers` | `[]` |
-| `platformRestriction.blockedSkus` | `[]` |
+_No payload settings discovered_
 
 
 ### scr-app-100-install-company-portal (Script)
@@ -529,6 +543,21 @@ Enforces passcode requirements including length, complexity, failed attempts, an
 Downloads and installs Microsoft Company Portal from a signed PKG. Automatically installs Microsoft Auto Update (MAU) first and ensures Rosetta 2 is present on Apple Silicon. Performs intelligent update checking via HTTP Last-Modified headers to avoid unnecessary reinstalls.
 
 **Source:** `scripts/intune/scr-app-100-install-company-portal.sh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### scr-app-101-install-edge (Script)
+
+Downloads and installs Microsoft Edge from the official Microsoft download URL. Uses aria2c for optimized downloading when available, with automatic fallback to curl. Performs intelligent update checking via HTTP Last-Modified headers to avoid unnecessary reinstalls. Waits for Edge to close before updating if running.
+
+**Source:** `scripts/intune/scr-app-101-install-edge.sh`  
 **Settings:** 4
 
 | Key | Value |
@@ -559,6 +588,66 @@ Downloads and installs Microsoft Remote Help from a signed PKG. Automatically in
 Downloads the latest Intune Log Watch DMG from GitHub, mounts it, and copies IntuneLogWatch.app into /Applications. Cleans up the DMG and mount point automatically.
 
 **Source:** `scripts/intune/scr-app-103-install-intunelogwatch.zsh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### scr-app-104-install-M365Apps (Script)
+
+Downloads and installs Microsoft 365 Apps for Mac (Word, Excel, PowerPoint, Outlook, OneNote) from the official Microsoft download URL. Supports waiting for splash screen (Dialog/Octory) before installation, automatic update detection via HTTP Last-Modified headers, and can terminate running apps during install.
+
+**Source:** `scripts/intune/scr-app-104-install-M365Apps.sh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### scr-app-105-install-windows-app (Script)
+
+Downloads and installs Microsoft Windows App (formerly Remote Desktop) from the official Microsoft download URL. Performs intelligent update checking via HTTP Last-Modified headers to avoid unnecessary reinstalls. Waits for the app to close before updating if running.
+
+**Source:** `scripts/intune/scr-app-105-install-windows-app.zsh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### scr-app-106-install-teams (Script)
+
+Downloads and installs Microsoft Teams from the official Microsoft download URL. Performs intelligent update checking via HTTP Last-Modified headers to avoid unnecessary reinstalls. Waits for Teams to close before updating if running.
+
+**Source:** `scripts/intune/scr-app-106-install-teams.zsh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### scr-app-107-M365copilot (Script)
+
+Downloads and installs Microsoft 365 Copilot from the official Microsoft download URL. Performs intelligent update checking via HTTP Last-Modified headers to avoid unnecessary reinstalls. Waits for the app to close before updating if running.
+
+**Source:** `scripts/intune/scr-app-107-M365copilot.zsh`  
 **Settings:** 4
 
 | Key | Value |
@@ -612,5 +701,45 @@ Configures the macOS Dock with a standardized set of Microsoft 365 and system ap
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
+
+### scr-sys-102-set-wallpaper (Script)
+
+Downloads and sets a corporate desktop wallpaper for the currently logged-in user. Uses osascript to tell Finder to update the desktop picture, which is required on macOS 14+ where file replacement no longer triggers a refresh. Requires the companion PPPC profile (CFG-SYS-100).
+
+**Source:** `scripts/intune/scr-sys-102-set-wallpaper.sh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### scr-utl-100-dialog-onboarding (Script)
+
+Displays an interactive Swift Dialog onboarding splash screen that monitors for application installations in real-time. Waits for desktop and Swift Dialog binary availability, then detects Company Portal, Microsoft 365, Microsoft Edge, Microsoft 365 Copilot, and Windows App via app bundle presence or package receipt. Does NOT install apps - only monitors and displays progress as apps are installed by other deployment mechanisms (e.g., Intune). Includes configurable timeouts for desktop wait (15 min), Dialog binary wait (20 min), and app monitoring (60 min).
+
+**Source:** `scripts/intune/scr-utl-100-dialog-onboarding.sh`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `RunAsAccount` | `system` |
+| `BlockExecutionNotifications` | `true` |
+| `ExecutionFrequency` | `PT0S` |
+| `RetryCount` | `3` |
+
+
+### wallpaper (Resource)
+
+Sample corporate desktop wallpaper image used by the wallpaper deployment script (SCR-SYS-102). Replace this image with your organization's branded wallpaper.
+
+**Source:** `resources/wallpaper.png`  
+**Settings:** 0
+
+_No payload settings discovered_
 
 
