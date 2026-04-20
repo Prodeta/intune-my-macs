@@ -2,9 +2,9 @@
 
 ## Configuration Documentation
 
-**Generated:** April 18, 2026
+**Generated:** April 20, 2026
 
-**Total Artifacts:** 37
+**Total Artifacts:** 38
 
 # About Intune My Macs
 
@@ -47,6 +47,7 @@ Click any reference ID to jump to detailed configuration.
 | [pol-sec-004-guest-account](#pol-sec-004-guest-account-policy) | Policy | 1 |
 | [pol-sec-005-screensaver](#pol-sec-005-screensaver-policy) | Policy | 6 |
 | [pol-sec-006-restrictions](#pol-sec-006-restrictions-policy) | Policy | 80 |
+| [pol-sec-007-recovery-lock](#pol-sec-007-recovery-lock-policy) | Policy | 2 |
 | [pol-sys-100-ntp](#pol-sys-100-ntp-policy) | Policy | 1 |
 | [pol-sys-101-login-items](#pol-sys-101-login-items-policy) | Policy | 8 |
 | [pol-sys-102-power](#pol-sys-102-power-policy) | Policy | 5 |
@@ -427,6 +428,19 @@ Comprehensive security policy for macOS devices that restricts various system fe
 | `com.apple.applicationaccess_forcebypassscreencapturealert` | `False` |
 | `com.apple.applicationaccess_forceondeviceonlydictation` | `True` |
 | `com.apple.applicationaccess_safariallowautofill` | `True` |
+
+
+### pol-sec-007-recovery-lock (Policy)
+
+Enables Recovery Lock on Apple Silicon Macs to prevent unauthorized access to macOS Recovery. When enabled, a password is required to access Recovery mode, adding an additional layer of security against physical attacks and unauthorized system modifications.
+
+**Source:** `configurations/intune/pol-sec-007-recovery-lock.json`  
+**Settings:** 2
+
+| Key | Value |
+|-----|-------|
+| `setrecoverylock_enablerecoverylockpassword` | `True` |
+| `setrecoverylock_recoverylockpasswordrotationschedule` | `0` |
 
 
 ### pol-sys-100-ntp (Policy)

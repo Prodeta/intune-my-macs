@@ -39,10 +39,10 @@ PRK="/var/db/FileVaultPRK.dat"
 ## Check if the log directory has been created
 if [ -d $logandmetadir ]; then
 	## Already created
-	echo "[$(date +"%Y-%m-%d %H:%M:%S")] [INFO] Log directory already exists - $logandmetadir"
+	echo "[$(date -u +"%Y-%m-%d %H:%M:%S UTC")] [INFO] Log directory already exists - $logandmetadir"
 else
 	## Creating Metadirectory
-	echo "[$(date +"%Y-%m-%d %H:%M:%S")] [INFO] creating log directory - $logandmetadir"
+	echo "[$(date -u +"%Y-%m-%d %H:%M:%S UTC")] [INFO] creating log directory - $logandmetadir"
 	mkdir -p $logandmetadir
 fi
 
@@ -58,7 +58,7 @@ function logger() {
     message=$2
 
     # Log the message with the current date and time and the specified log level
-    date=$(date +"%Y-%m-%d %H:%M:%S")
+    date=$(date -u +"%Y-%m-%d %H:%M:%S UTC")
     echo "[$date] [$level] $message"
     echo "[$date] [$level] $message" >> "$logandmetadir/installeb.log"
 }

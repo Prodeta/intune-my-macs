@@ -10,7 +10,7 @@ appdir="/Applications"
 tempdir=$(mktemp -d)
 log="$logandmetadir/$appname.log"
 metafile="$logandmetadir/$appname.meta"
-logdate() { date '+%Y-%m-%d %H:%M:%S'; }
+logdate() { date -u '+%Y-%m-%d %H:%M:%S UTC'; }
 ARIA2="/usr/local/aria2/bin/aria2c"
 
 

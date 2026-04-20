@@ -41,7 +41,7 @@ exec 1>> "$log" 2>&1
 
 echo ""
 echo "##############################################################"
-echo "# $(date) | Starting download of Desktop Wallpaper"
+echo "# $(date -u "+%Y-%m-%d %H:%M:%S UTC") | Starting download of Desktop Wallpaper"
 echo "############################################################"
 echo ""
 
@@ -52,28 +52,28 @@ echo ""
 dockWaited=0
 while ! pgrep -x "Dock" > /dev/null 2>&1; do
     if [ "$dockWaited" -ge "$dockMaxWait" ]; then
-        echo "$(date) | Dock not running after ${dockMaxWait}s. Likely still in Setup Assistant. Exiting."
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Dock not running after ${dockMaxWait}s. Likely still in Setup Assistant. Exiting."
         exit 1
     fi
     if [ "$dockWaited" -eq 0 ]; then
-        echo "$(date) | Dock not running, waiting for user desktop..."
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Dock not running, waiting for user desktop..."
     fi
     sleep 5
     dockWaited=$((dockWaited + 5))
 done
 if [ "$dockWaited" -gt 0 ]; then
-    echo "$(date) | Dock is now running (waited ${dockWaited}s)"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Dock is now running (waited ${dockWaited}s)"
 else
-    echo "$(date) | Dock is running"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Dock is running"
 fi
 
 ##
 ## Checking if Wallpaper directory exists and create it if it's missing
 ##
 if [ -d "$wallpaperdir" ]; then
-    echo "$(date) | Wallpaper dir [$wallpaperdir] already exists"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Wallpaper dir [$wallpaperdir] already exists"
 else
-    echo "$(date) | Creating [$wallpaperdir]"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Creating [$wallpaperdir]"
     mkdir -p "$wallpaperdir"
 fi
 
@@ -83,34 +83,34 @@ fi
 
 if [ "$usebingwallpaper" = true ]; then
 
-  echo "$(date) | Fetching today's Bing Wallpaper URL via JSON API"
+  echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Fetching today's Bing Wallpaper URL via JSON API"
   bingapiresponse=$(curl -sL "https://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US")
   urlbase=$(echo "$bingapiresponse" | grep -o '"urlbase":"[^"]*"' | head -1 | sed 's/"urlbase":"//;s/"//')
 
   if [ -n "$urlbase" ]; then
     wallpaperurl="https://www.bing.com${urlbase}_UHD.jpg"
-    echo "$(date) | Setting wallpaperurl to todays Bing Desktop [$wallpaperurl]"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Setting wallpaperurl to todays Bing Desktop [$wallpaperurl]"
   else
-    echo "$(date) | Failed to parse Bing API response, falling back to default wallpaperurl"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Failed to parse Bing API response, falling back to default wallpaperurl"
   fi
 
 fi
 
-echo "$(date) | Downloading Wallpaper from [$wallpaperurl] to [$wallpaperdir/$wallpaperfile]"
+echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Downloading Wallpaper from [$wallpaperurl] to [$wallpaperdir/$wallpaperfile]"
 curl -L -o "$wallpaperdir/$wallpaperfile" "$wallpaperurl"
 if [ "$?" != "0" ]; then
-   echo "$(date) | Failed to download wallpaper image from [$wallpaperurl]"
+   echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Failed to download wallpaper image from [$wallpaperurl]"
    exit 1
 fi
 
-echo "$(date) | Wallpaper [$wallpaperurl] downloaded to [$wallpaperdir/$wallpaperfile]"
+echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Wallpaper [$wallpaperurl] downloaded to [$wallpaperdir/$wallpaperfile]"
 
 ##
 ## Verify the downloaded file is actually an image
 ##
 filetype=$(file -b --mime-type "$wallpaperdir/$wallpaperfile")
 if [[ "$filetype" != image/* ]]; then
-    echo "$(date) | Downloaded file is not an image (detected: $filetype). Aborting wallpaper set."
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Downloaded file is not an image (detected: $filetype). Aborting wallpaper set."
     exit 1
 fi
 
@@ -121,12 +121,12 @@ fi
 ##
 currentUser=$(stat -f "%Su" /dev/console)
 if [ "$currentUser" = "root" ] || [ "$currentUser" = "loginwindow" ] || [ -z "$currentUser" ]; then
-    echo "$(date) | No user currently logged in (console user: ${currentUser:-none}). Wallpaper downloaded but not applied — it will be picked up by the override-picture-path profile at next login."
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | No user currently logged in (console user: ${currentUser:-none}). Wallpaper downloaded but not applied — it will be picked up by the override-picture-path profile at next login."
     exit 0
 fi
 
 currentUserUID=$(id -u "$currentUser")
-echo "$(date) | Setting wallpaper for user [$currentUser] (UID: $currentUserUID)"
+echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Setting wallpaper for user [$currentUser] (UID: $currentUserUID)"
 
 wallpaperResult=$(/bin/launchctl asuser "$currentUserUID" sudo -u "$currentUser" /usr/bin/osascript -e "
     tell application \"Finder\"
@@ -136,11 +136,11 @@ wallpaperResult=$(/bin/launchctl asuser "$currentUserUID" sudo -u "$currentUser"
 osascriptExitCode=$?
 
 if [ "$osascriptExitCode" = "0" ]; then
-    echo "$(date) | Wallpaper successfully set for user [$currentUser]"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Wallpaper successfully set for user [$currentUser]"
     exit 0
 else
-    echo "$(date) | Failed to set wallpaper via osascript for user [$currentUser] (exit code: $osascriptExitCode)"
-    echo "$(date) | osascript output: $wallpaperResult"
-    echo "$(date) | Check that the PPPC profile (wallpaper-pppc.mobileconfig) is deployed."
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Failed to set wallpaper via osascript for user [$currentUser] (exit code: $osascriptExitCode)"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | osascript output: $wallpaperResult"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Check that the PPPC profile (wallpaper-pppc.mobileconfig) is deployed."
     exit 1
 fi

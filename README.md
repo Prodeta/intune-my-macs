@@ -111,7 +111,7 @@ Assignment filters are evaluated at policy delivery time with no group-evaluatio
 
 | Date | Change | Details |
 |------|--------|---------|
-| 2026-04-10 | **Removed** SCR-APP-101 (Set Office Default Applications) | macOS 26.4 requires user consent for every default-app change. The `utiluti`-based script now triggers multiple confirmation prompts per user, making silent deployment impossible. See [utiluti#10](https://github.com/scriptingosx/utiluti/issues/10). |
+| 2026-04-10 | **Removed** Set Office Default Applications script | macOS 26.4 requires user consent for every default-app change. The `utiluti`-based script now triggers multiple confirmation prompts per user, making silent deployment impossible. See [utiluti#10](https://github.com/scriptingosx/utiluti/issues/10). |
 | 2026-04-10 | **Fixed** POL-SEC-006 passkey autofill blocking | Changed `allowPasswordAutoFill` and `safariAllowAutoFill` to `true` so users can enable "AutoFill Passwords and Passkeys" during device registration. Fixes [#17](https://github.com/microsoft/intune-my-macs/issues/17). |
 | 2026-04-10 | **Fixed** POL-APP-100 deprecated MAU data collection value | Changed `AcknowledgedDataCollectionPolicy` from the deprecated "send required and optional data" to "send required data". Prevents MAU from repeatedly prompting users. Fixes [#15](https://github.com/microsoft/intune-my-macs/issues/15). |
 | 2026-04-10 | **Added** guidance against dynamic device groups | Dynamic device groups cause unpredictable enrollment delays. README now documents assignment filters as the recommended approach. Fixes [#14](https://github.com/microsoft/intune-my-macs/issues/14). |

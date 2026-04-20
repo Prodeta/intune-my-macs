@@ -55,11 +55,11 @@ waitForProcess () {
     fixedDelay=$2
     terminate=$3
 
-    echo "$(date) | Waiting for other [$processName] processes to end"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Waiting for other [$processName] processes to end"
     while ps aux | grep "$processName" | grep -v grep &>/dev/null; do
 
         if [[ $terminate == "true" ]]; then
-            echo "$(date) | + [$appname] running, terminating [$processpath]..."
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | + [$appname] running, terminating [$processpath]..."
             pkill -f "$processName"
             return
         fi
@@ -71,11 +71,11 @@ waitForProcess () {
             delay=$fixedDelay
         fi
 
-        echo "$(date) |  + Another instance of $processName is running, waiting [$delay] seconds"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") |  + Another instance of $processName is running, waiting [$delay] seconds"
         sleep $delay
     done
 
-    echo "$(date) | No instances of [$processName] found, safe to proceed"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | No instances of [$processName] found, safe to proceed"
 
 }
 
@@ -100,7 +100,7 @@ checkForRosetta2 () {
 
     
 
-    echo "$(date) | Checking if we need Rosetta 2 or not"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Checking if we need Rosetta 2 or not"
 
     # if Software update is already running, we need to wait...
     waitForProcess "/usr/sbin/softwareupdate"
@@ -118,28 +118,28 @@ checkForRosetta2 () {
         processor=$(/usr/sbin/sysctl -n machdep.cpu.brand_string | grep -o "Intel")
         
         if [[ -n "$processor" ]]; then
-            echo "$(date) | $processor processor installed. No need to install Rosetta."
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | $processor processor installed. No need to install Rosetta."
         else
 
             # Check for Rosetta "oahd" process. If not found,
             # perform a non-interactive install of Rosetta.
             
             if /usr/bin/pgrep oahd >/dev/null 2>&1; then
-                echo "$(date) | Rosetta is already installed and running. Nothing to do."
+                echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Rosetta is already installed and running. Nothing to do."
             else
                 /usr/sbin/softwareupdate --install-rosetta --agree-to-license
             
                 if [[ $? -eq 0 ]]; then
-                    echo "$(date) | Rosetta has been successfully installed."
+                    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Rosetta has been successfully installed."
                 else
-                    echo "$(date) | Rosetta installation failed!"
+                    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Rosetta installation failed!"
                     exitcode=1
                 fi
             fi
         fi
         else
-            echo "$(date) | Mac is running macOS $osvers_major.$osvers_minor.$osvers_dot_version."
-            echo "$(date) | No need to install Rosetta on this version of macOS."
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Mac is running macOS $osvers_major.$osvers_minor.$osvers_dot_version."
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | No need to install Rosetta on this version of macOS."
     fi
 
 }
@@ -174,7 +174,7 @@ fetchLastModifiedDate() {
     ## Check if the log directory has been created
     if [[ ! -d "$logandmetadir" ]]; then
         ## Creating Metadirectory
-        echo "$(date) | Creating [$logandmetadir] to store metadata"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Creating [$logandmetadir] to store metadata"
         mkdir -p "$logandmetadir"
     fi
 
@@ -182,7 +182,7 @@ fetchLastModifiedDate() {
     lastmodified=$(curl -sIL "$weburl" | grep -i "last-modified" | awk '{$1=""; print $0}' | awk '{ sub(/^[ \t]+/, ""); print }' | tr -d '\r')
 
     if [[ $1 == "update" ]]; then
-        echo "$(date) | Writing last modifieddate [$lastmodified] to [$metafile]"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Writing last modifieddate [$lastmodified] to [$metafile]"
         echo "$lastmodified" > "$metafile"
     fi
 
@@ -209,7 +209,7 @@ function downloadApp () {
     ###############################################################
     ###############################################################
 
-    echo "$(date) | Starting downloading of [$appname]"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Starting downloading of [$appname]"
 
     # If local copy is defined, let's try and download it...
     if [ "$localcopy" ]; then
@@ -217,14 +217,14 @@ function downloadApp () {
         #updateSplashScreen installing           # Octory
         updateSplashScreen wait Downloading     # Swift Dialog
         # Check to see if we can access our local copy of Office
-        echo "$(date) | Downloading [$localcopy] to [$tempfile]"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Downloading [$localcopy] to [$tempfile]"
         rm -rf "$tempfile" > /dev/null 2>&1
         curl -f -s -L -o "$tempdir/$tempfile" "$localcopy"
         if [ $? == 0 ]; then
-            echo "$(date) | Local copy of $appname downloaded at $tempfile"
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Local copy of $appname downloaded at $tempfile"
             downloadcomplete="true"
         else
-            echo "$(date) | Failed to download Local copy [$localcopy] to [$tempfile]"
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Failed to download Local copy [$localcopy] to [$tempfile]"
         fi
     fi
 
@@ -233,13 +233,13 @@ function downloadApp () {
 
         updateSplashScreen wait Downloading     # Swift Dialog
         rm -rf "$tempfile" > /dev/null 2>&1
-        echo "$(date) | Downloading [$weburl] to [$tempfile]"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Downloading [$weburl] to [$tempfile]"
         curl -f -s --connect-timeout 60 --retry 10 --retry-delay 30 -L -o "$tempdir/$tempfile" "$weburl"
         if [ $? == 0 ]; then
-            echo "$(date) | Downloaded $weburl to $tempdir/$tempfile"
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Downloaded $weburl to $tempdir/$tempfile"
         else
 
-            echo "$(date) | Failure to download $weburl to $tempdir/$tempfile"
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Failure to download $weburl to $tempdir/$tempfile"
             updateSplashScreen fail Download failed     # Swift Dialog
             exit 1
 
@@ -272,7 +272,7 @@ function updateCheck() {
     ###############################################################
 
 
-    echo "$(date) | Checking if we need to install or update [$appname]"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Checking if we need to install or update [$appname]"
 
     # App Array for Office 365 Apps for Mac
     OfficeApps=( "/Applications/Microsoft Excel.app"
@@ -283,7 +283,7 @@ function updateCheck() {
 
     for i in "${OfficeApps[@]}"; do
         if [[ ! -e "$i" ]]; then
-            echo "$(date) | [$i] not installed, need to perform full installation"
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | [$i] not installed, need to perform full installation"
             let missingappcount=$missingappcount+1
         fi
     done
@@ -292,7 +292,7 @@ function updateCheck() {
 
         # App is installed, if it's updates are handled by MAU we should quietly exit
         if [[ $autoUpdate == "true" ]]; then
-            echo "$(date) | [$appname] is already installed and handles updates itself, exiting"
+            echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | [$appname] is already installed and handles updates itself, exiting"
             updateSplashScreen success Installed         # Swift Dialog
             exit 0;
         fi
@@ -305,17 +305,17 @@ function updateCheck() {
             if [ -f "$metafile" ]; then
                 previouslastmodifieddate=$(cat "$metafile")
                 if [[ "$previouslastmodifieddate" != "$lastmodified" ]]; then
-                    echo "$(date) | Update found, previous [$previouslastmodifieddate] and current [$lastmodified]"
+                    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Update found, previous [$previouslastmodifieddate] and current [$lastmodified]"
                     update="update"
                 else
-                    echo "$(date) | No update between previous [$previouslastmodifieddate] and current [$lastmodified]"
+                    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | No update between previous [$previouslastmodifieddate] and current [$lastmodified]"
                     updateSplashScreen success Installed         # Swift Dialog
-                    echo "$(date) | Exiting, nothing to do"
+                    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Exiting, nothing to do"
                     exit 0
                 fi
             else
-                echo "$(date) | Meta file [$metafile] not found"
-                echo "$(date) | Unable to determine if update required, updating [$appname] anyway"
+                echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Meta file [$metafile] not found"
+                echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Unable to determine if update required, updating [$appname] anyway"
 
             fi
 
@@ -351,7 +351,7 @@ function installPKG () {
 
 
 
-    echo "$(date) | Installing [$appname]"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Installing [$appname]"
     updateSplashScreen wait Installing     # Swift Dialog
 
     installer -pkg "$tempdir/$tempfile" -target /Applications
@@ -360,16 +360,16 @@ function installPKG () {
     if [ "$?" = "0" ]; then
 
         # Cleanup
-        echo "$(date) | $appname Installed"
-        echo "$(date) | Cleaning Up"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | $appname Installed"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Cleaning Up"
         rm -rf "$tempdir"
 
         # Update metadata in files
-        echo "$(date) | Writing last modifieddate $lastmodified to $metafile"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Writing last modifieddate $lastmodified to $metafile"
         echo "$lastmodified" > "$metafile"
 
         # Update Swift Dialog
-        echo "$(date) | Application [$appname] succesfully installed"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Application [$appname] succesfully installed"
         fetchLastModifiedDate update
         updateSplashScreen success Installed    # Swift Dialog
 
@@ -377,7 +377,7 @@ function installPKG () {
 
     else
 
-        echo "$(date) | Failed to install $appname"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Failed to install $appname"
         rm -rf "$tempdir"
         #updateSplashScreen failed           # Octory
         updateSplashScreen fail Failed     # Swift Dialog
@@ -413,7 +413,7 @@ function updateSplashScreen () {
     if [[ -a "/Library/Application Support/Dialog/Dialog.app/Contents/MacOS/Dialog" ]]; then
 
 
-        echo "$(date) | Updating Swift Dialog monitor for [$appname] to [$1]"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Updating Swift Dialog monitor for [$appname] to [$1]"
         echo listitem: title: $appname, status: $1, statustext: $2 >> /var/tmp/dialog.log 
 
         # Supported status: wait, success, fail, error, pending or progress:xx
@@ -435,7 +435,7 @@ function startLog() {
 
     if [[ ! -d "$logandmetadir" ]]; then
         ## Creating Metadirectory
-        echo "$(date) | Creating [$logandmetadir] to store logs"
+        echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Creating [$logandmetadir] to store logs"
         mkdir -p "$logandmetadir"
     fi
 
@@ -447,10 +447,10 @@ function startLog() {
 waitForDesktop () {
   until ps aux | grep /System/Library/CoreServices/Dock.app/Contents/MacOS/Dock | grep -v grep &>/dev/null; do
     delay=$(( $RANDOM % 50 + 10 ))
-    echo "$(date) |  + Dock not running, waiting [$delay] seconds"
+    echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") |  + Dock not running, waiting [$delay] seconds"
     sleep $delay
   done
-  echo "$(date) | Dock is here, lets carry on"
+  echo "$(date -u "+%Y-%m-%d %H:%M:%S UTC") | Dock is here, lets carry on"
 }
 
 ###################################################################################
@@ -466,7 +466,7 @@ startLog
 
 echo ""
 echo "##############################################################"
-echo "# $(date) | Logging install of [$appname] to [$log]"
+echo "# $(date -u "+%Y-%m-%d %H:%M:%S UTC") | Logging install of [$appname] to [$log]"
 echo "############################################################"
 echo ""
 

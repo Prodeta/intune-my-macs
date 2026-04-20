@@ -10,7 +10,7 @@ autoUpdate="false"
 tempdir=$(mktemp -d)
 log="$logandmetadir/$appname.log"
 metafile="$logandmetadir/$appname.meta"
-logdate() { date '+%Y-%m-%d %H:%M:%S'; }
+logdate() { date -u '+%Y-%m-%d %H:%M:%S UTC'; }
 
 cleanup() {
     [[ -n "$tempdir" && -d "$tempdir" ]] && rm -rf "$tempdir"

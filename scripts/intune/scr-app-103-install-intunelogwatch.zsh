@@ -16,7 +16,7 @@ GITHUB_RELEASES_API="https://api.github.com/repos/gilburns/IntuneLogWatch/releas
 MOUNT_POINT=""
 
 log() {
-	echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+	echo "[$(date -u '+%Y-%m-%d %H:%M:%S UTC')] $*"
 }
 
 cleanup() {
