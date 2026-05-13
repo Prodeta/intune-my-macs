@@ -35,6 +35,10 @@
     Requires Microsoft Graph PowerShell SDK. Scopes: DeviceManagementConfiguration.Read.All
     Safe read-only operation. Increase -Depth in ConvertTo-Json if needed for deeply nested settings.
 #>
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 param(
     [string]$OutputFolder = './exports',
     [switch]$SkipConnect,

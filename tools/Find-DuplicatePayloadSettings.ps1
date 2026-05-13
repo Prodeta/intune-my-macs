@@ -31,6 +31,9 @@
     Version: 1.0.0
 #>
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 [CmdletBinding()]
 param(
     [Parameter()]

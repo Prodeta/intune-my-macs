@@ -13,6 +13,8 @@ For details on using delegated access, see this guide here:
 https://learn.microsoft.com/powershell/microsoftgraph/get-started?view=graph-powershell-1.0
 For details on using app-only access for unattended scenarmacOS, see Use app-only authentication with the Microsoft Graph PowerShell SDK:
 https://learn.microsoft.com/powershell/microsoftgraph/app-only?view=graph-powershell-1.0&tabs=azure-portal
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 #>
 
 # Choose what to run

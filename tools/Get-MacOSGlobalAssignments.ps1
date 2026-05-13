@@ -29,6 +29,10 @@ Optional path to write CSV export of results.
 .NOTES
 Requires Microsoft.Graph.Authentication (Connect-MgGraph) and sufficient Intune permissions (DeviceManagementConfiguration.Read.All, DeviceManagementApps.Read.All).
 #>
+
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 param(
     [switch]$OutputJson,
     [string]$CsvPath,

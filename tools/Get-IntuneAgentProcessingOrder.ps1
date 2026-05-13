@@ -3,6 +3,9 @@ Simple listing of assigned macOS device shell scripts and macOS apps.
 Optional -Prefix filter. All complexity (group lookups, hex, colors, debug) removed.
 #>
 
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+
 param(
     [Parameter(Mandatory=$false)]
     [string]$Prefix

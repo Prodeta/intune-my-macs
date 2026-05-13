@@ -119,3 +119,9 @@ Assignment filters are evaluated at policy delivery time with no group-evaluatio
 ---
 
 Built with ❤️ by the **Microsoft Intune Customer Experience Engineering team**
+
+## Trademarks
+
+This project may contain trademarks or logos for projects, products, or services. 
+Authorized use of Microsoft trademarks or logos is subject to and must follow 
+Microsoft's Trademark & Brand Guidelines.

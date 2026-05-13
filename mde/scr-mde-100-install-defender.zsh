@@ -5,7 +5,6 @@
 ## IMM - Install Microsoft Defender for Endpoint (PKG)
 ##
 ## Version: 1.0.0
-## Maintainer: neiljohn@microsoft.com
 ##
 ## Summary
 ## - Downloads and installs the latest Microsoft Defender for Endpoint for macOS (PKG).

@@ -5,7 +5,6 @@
 ## IMM - Install Remote Help (PKG)
 ##
 ## Version: 1.0.0
-## Maintainer: neiljohn@microsoft.com
 ##
 ## Summary
 ## - Downloads and installs Microsoft Remote Help on macOS using a signed PKG.
@@ -47,7 +46,6 @@
 ## (including, without limitation, damages for loss of business profits, business interruption, loss of business information, or other pecuniary
 ## loss) arising out of the use of or inability to use the sample scripts or documentation, even if Microsoft has been advised of the possibility
 ## of such damages.
-## Feedback: neiljohn@microsoft.com
 
 # User Defined variables
 mauurl="https://go.microsoft.com/fwlink/?linkid=830196"                         # URL to fetch latest MAU

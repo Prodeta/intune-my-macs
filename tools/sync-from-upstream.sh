@@ -7,6 +7,8 @@
 #
 # Original: https://github.com/microsoft/intune-my-macs.git
 # Fork:     Detected from your local git repository
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
 #
 
 set -e
