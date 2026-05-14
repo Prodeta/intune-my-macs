@@ -13,6 +13,11 @@ Automate a Microsoft Intune macOS proof-of-concept in minutes: policies, complia
 brew install --cask powershell
 ```
 
+**Optional macOS GUI launcher**
+```bash
+brew install swiftdialog/swiftdialog/dialog
+```
+
 **Windows**
 ```powershell
 winget install Microsoft.PowerShell
@@ -30,19 +35,30 @@ winget install Microsoft.PowerShell
 ```bash
 git clone https://github.com/microsoft/intune-my-macs.git
 ```
-# Preview (dry-run)
+
+**macOS GUI launcher**
+```bash
+cd intune-my-macs
+pwsh ./Start-IntuneMyMacs.ps1
 ```
+
+`Start-IntuneMyMacs.ps1` is a native macOS SwiftDialog frontend for `mainScript.ps1`. It lets you set the policy prefix, optional tenant ID, optional Entra assignment group, include MDE content, choose dry-run versus `--apply`, run `--remove-all`, and select individual manifests before launching the underlying deployment.
+
+**PowerShell CLI preview (dry-run)**
+```bash
 cd intune-my-macs
 pwsh ./mainScript.ps1 --assign-group "Intune Mac Pilot"
 ```
 
-# Apply config
-```
+**PowerShell CLI apply**
+```bash
 cd intune-my-macs
 pwsh ./mainScript.ps1 --assign-group "Intune Mac Pilot" --apply
 ```
 
 > The script defaults to **dry-run mode**. Nothing is created until you add `--apply`.
+
+> `Start-IntuneMyMacs.ps1` is macOS-only because it depends on SwiftDialog. On Windows, use `mainScript.ps1` directly.
 
 ### 4. Common flags
 | Flag | Purpose |
