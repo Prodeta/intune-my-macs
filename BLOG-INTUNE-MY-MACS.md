@@ -1,6 +1,8 @@
 # Accelerate Your macOS Intune Journey with Intune My Macs
 
-**A production-ready starter kit for Microsoft Intune macOS device management**
+**A proof-of-concept starter kit for Microsoft Intune macOS device management**
+
+> ⚠️ **Proof of Concept — not for production use.** This project is sample code intended for evaluation, learning, and pilot scenarios. It is not a hardened production baseline. Review, test, and adapt every artifact before deploying to managed devices.
 
 ---
 
@@ -8,7 +10,7 @@ Managing macOS devices in an enterprise environment can be challenging—especia
 
 ## What is Intune My Macs?
 
-Intune My Macs is an open-source project from the Microsoft Intune Customer Experience Engineering team that allows you to deploy a complete macOS proof-of-concept in minutes rather than days. It's a curated collection of 38+ enterprise-grade configurations, policies, scripts, and applications—all deployable through a single PowerShell script.
+Intune My Macs is an open-source project from the Microsoft Intune Customer Experience Engineering team that allows you to deploy a complete macOS proof-of-concept in minutes rather than days. It's a curated collection of 38+ sample configurations, policies, scripts, and applications—all deployable through a single PowerShell script.
 
 The project operates in **dry-run mode by default**, letting you preview exactly what will be created before committing any changes to your Intune tenant. When you're ready, simply add the `--apply` flag to deploy.
 

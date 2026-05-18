@@ -310,7 +310,7 @@ function Show-SettingsDialog {
         button1text = 'Connect  →'
         button2text = 'Cancel'
         textfield  = @(
-            @{ title = 'Policy Prefix';         name = 'Policy Prefix';         value = $Defaults.Prefix;      prompt = 'e.g. [Production]' }
+            @{ title = 'Policy Prefix';         name = 'Policy Prefix';         value = $Defaults.Prefix;      prompt = 'e.g. [POC]' }
             @{ title = 'Tenant ID';             name = 'Tenant ID';             value = $Defaults.TenantId;    prompt = 'Optional — leave blank for default' }
             @{ title = 'Assign to Entra Group'; name = 'Assign to Entra Group'; value = $Defaults.AssignGroup; prompt = 'Optional — Entra group display name' }
         )

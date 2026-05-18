@@ -295,7 +295,7 @@ if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
     Write-Host "  # Import only apps and assign to a group"
     Write-Host "  ./mainScript.ps1 --apps --assign-group `"All Managed Macs`"`n"
     Write-Host "  # Import config policies with custom prefix"
-    Write-Host "  ./mainScript.ps1 --config --prefix `"[Production]`"`n"
+    Write-Host "  ./mainScript.ps1 --config --prefix `"[POC]`"`n"
     Write-Host "  # Connect to a specific tenant"
     Write-Host "  ./mainScript.ps1 --tenant-id `"12345678-1234-1234-1234-123456789012`"`n"
     Write-Host "  # Remove all objects with the default prefix"

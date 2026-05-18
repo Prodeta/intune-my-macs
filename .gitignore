@@ -7,3 +7,6 @@ mde/cfg-mde-001-onboarding.json
 mde/cfg-mde-001-onboarding.mobileconfig
 mde/cfg-mde-001-onboarding.xml
 
+
+# Local OSS compliance audit reports — not for check-in
+.oss-compliance/

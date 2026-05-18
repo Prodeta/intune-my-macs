@@ -258,9 +258,10 @@ def generate_markdown(entries: List[Dict[str, Any]]) -> str:
     
     # Page 2: Project Description (Standard font)
     md.append("# About Intune My Macs\n\n")
-    md.append("**Intune My Macs** is a production-ready configuration repository for Microsoft Intune-based macOS device management. ")
-    md.append("This project provides enterprise-grade policies, configuration profiles, scripts, and packages to secure, ")
-    md.append("configure, and manage macOS devices in enterprise environments.\n\n")
+    md.append("> **Proof of Concept \u2014 not for production use.** This repository is published as sample code to help teams evaluate and learn Microsoft Intune for macOS. The configurations and scripts are not a hardened baseline, are provided as-is without warranty or support, and must be reviewed, tested, and adapted before being deployed to managed devices.\n\n")
+    md.append("**Intune My Macs** is a proof-of-concept configuration repository for Microsoft Intune-based macOS device management. ")
+    md.append("This project provides sample policies, configuration profiles, scripts, and packages to help you evaluate and learn macOS device management with Intune. ")
+    md.append("It is not a production baseline \u2014 review and adapt every artifact before deploying to managed devices.\n\n")
     md.append("## What's Included\n\n")
     md.append("This repository contains the following artifact types:\n\n")
     md.append("- **Settings Catalog Policies** - Modern declarative configuration policies\n")

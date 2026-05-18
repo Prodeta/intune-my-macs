@@ -1,5 +1,7 @@
 # 🚀 Intune my Macs
 
+> ⚠️ **Proof of Concept — not for production use.** This repository is published as sample code to help teams evaluate and learn Microsoft Intune for macOS. The configurations and scripts are **not a hardened baseline**, are provided **as-is without warranty or support**, and must be reviewed, tested, and adapted before being deployed to managed devices. See [SUPPORT.md](SUPPORT.md) and [SECURITY.md](SECURITY.md).
+
 Automate a Microsoft Intune macOS proof-of-concept in minutes: policies, compliance, scripts, PKG apps, and optional Microsoft Defender for Endpoint (MDE) are deployed from a single script.
 
 ---

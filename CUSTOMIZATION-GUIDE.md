@@ -1,5 +1,7 @@
 # Customization Guide
 
+> ⚠️ **Proof of Concept — not for production use.** The artifacts in this repository are sample code. Review, test, and adapt every change in a non-production tenant before considering it for production-managed devices. See [SUPPORT.md](SUPPORT.md).
+
 How to configure, edit, and extend the artifacts in this repository.
 
 ## How the Project Works

@@ -2,13 +2,15 @@
 
 ## Configuration Documentation
 
-**Generated:** April 20, 2026
+**Generated:** May 18, 2026
 
-**Total Artifacts:** 38
+**Total Artifacts:** 37
 
 # About Intune My Macs
 
-**Intune My Macs** is a production-ready configuration repository for Microsoft Intune-based macOS device management. This project provides enterprise-grade policies, configuration profiles, scripts, and packages to secure, configure, and manage macOS devices in enterprise environments.
+> **Proof of Concept — not for production use.** This repository is published as sample code to help teams evaluate and learn Microsoft Intune for macOS. The configurations and scripts are not a hardened baseline, are provided as-is without warranty or support, and must be reviewed, tested, and adapted before being deployed to managed devices.
+
+**Intune My Macs** is a proof-of-concept configuration repository for Microsoft Intune-based macOS device management. This project provides sample policies, configuration profiles, scripts, and packages to help you evaluate and learn macOS device management with Intune. It is not a production baseline — review and adapt every artifact before deploying to managed devices.
 
 ## What's Included
 
@@ -53,7 +55,6 @@ Click any reference ID to jump to detailed configuration.
 | [pol-sys-102-power](#pol-sys-102-power-policy) | Policy | 5 |
 | [pol-sys-103-software-update](#pol-sys-103-software-update-policy) | Policy | 9 |
 | [pol-sys-104-ddm-passcode](#pol-sys-104-ddm-passcode-policy) | Policy | 11 |
-| [pol-sys-105-enrollment-restriction](#pol-sys-105-enrollment-restriction-enrollmentrestriction) | EnrollmentRestriction | 0 |
 | [pol-sys-105-enrollment-restriction](#pol-sys-105-enrollment-restriction-enrollmentrestriction) | EnrollmentRestriction | 0 |
 | [scr-app-100-install-company-portal](#scr-app-100-install-company-portal-script) | Script | 4 |
 | [scr-app-101-install-edge](#scr-app-101-install-edge-script) | Script | 4 |
@@ -116,7 +117,7 @@ Returns the version of the Microsoft Intune Agent (Sidecar) installed on the Mac
 
 Platform Single Sign-On (SSO) configuration for Microsoft Entra ID on macOS.
 
-**Source:** `configurations\entra\cfg-idp-001-platform-sso.json`  
+**Source:** `configurations/entra/cfg-idp-001-platform-sso.json`  
 **Settings:** 18
 
 | Key | Value |
@@ -145,7 +146,7 @@ Platform Single Sign-On (SSO) configuration for Microsoft Entra ID on macOS.
 
 Essential login window security configuration for macOS devices. Disables FileVault auto-login to ensure users must explicitly authenticate, blocks external account authentication for tighter access control, and prevents administrators from disabling managed preferences to maintain security policy enforcement.
 
-**Source:** `configurations\intune\cfg-sec-001-login-window.mobileconfig`  
+**Source:** `configurations/intune/cfg-sec-001-login-window.mobileconfig`  
 **Settings:** 4
 
 | Key | Value |
@@ -160,7 +161,7 @@ Essential login window security configuration for macOS devices. Disables FileVa
 
 Configures screensaver idle time (10 minutes) to address Mac Evaluation Utility warning about unmanaged screensaver idle time settings. This legacy setting requires mobileconfig format as it's not available in Settings Catalog. Works in conjunction with POL-SEC-005 (Screensaver Security) which handles password requirements and other modern screensaver settings via Settings Catalog.
 
-**Source:** `configurations\intune\cfg-sec-002-screensaver-idle.mobileconfig`  
+**Source:** `configurations/intune/cfg-sec-002-screensaver-idle.mobileconfig`  
 **Settings:** 1
 
 | Key | Value |
@@ -172,7 +173,7 @@ Configures screensaver idle time (10 minutes) to address Mac Evaluation Utility 
 
 Pre-authorizes the Intune agent and osascript to send Apple Events to Finder for setting the desktop wallpaper. Required to avoid TCC consent prompts when the wallpaper script (SCR-SYS-102) runs on macOS 14+ devices.
 
-**Source:** `configurations\intune\cfg-sys-100-wallpaper-pppc.mobileconfig`  
+**Source:** `configurations/intune/cfg-sys-100-wallpaper-pppc.mobileconfig`  
 **Settings:** 1
 
 | Key | Value |
@@ -184,7 +185,7 @@ Pre-authorizes the Intune agent and osascript to send Apple Events to Finder for
 
 Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum macOS 15.0. Gatekeeper configuration handled separately via configuration policy.
 
-**Source:** `configurations\intune\cmp-cmp-001-macos-baseline.json`  
+**Source:** `configurations/intune/cmp-cmp-001-macos-baseline.json`  
 **Settings:** 12
 
 | Key | Value |
@@ -207,7 +208,7 @@ Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum 
 
 Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activation, and Outlook experience settings.
 
-**Source:** `configurations\intune\pol-app-100-office.json`  
+**Source:** `configurations/intune/pol-app-100-office.json`  
 **Settings:** 15
 
 | Key | Value |
@@ -233,7 +234,7 @@ Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activ
 
 Enhanced basic browser configuration for Microsoft Edge addressing gap analysis findings (Certificate management, network policies, system integration)
 
-**Source:** `configurations\Secure Enterprise Browser\pol-app-101-edge-level1.json`  
+**Source:** `configurations/Secure Enterprise Browser/pol-app-101-edge-level1.json`  
 **Settings:** 22
 
 | Key | Value |
@@ -266,7 +267,7 @@ Enhanced basic browser configuration for Microsoft Edge addressing gap analysis 
 
 Configures FileVault disk encryption on macOS devices during Setup Assistant with recovery key escrow.
 
-**Source:** `configurations\intune\pol-sec-001-filevault.json`  
+**Source:** `configurations/intune/pol-sec-001-filevault.json`  
 **Settings:** 9
 
 | Key | Value |
@@ -286,7 +287,7 @@ Configures FileVault disk encryption on macOS devices during Setup Assistant wit
 
 Enables macOS firewall and prevents users from accessing and modifying firewall settings through System Preferences, ensuring firewall configuration remains under IT control.
 
-**Source:** `configurations\intune\pol-sec-002-firewall.json`  
+**Source:** `configurations/intune/pol-sec-002-firewall.json`  
 **Settings:** 2
 
 | Key | Value |
@@ -299,7 +300,7 @@ Enables macOS firewall and prevents users from accessing and modifying firewall 
 
 Comprehensive Gatekeeper and system policy security configuration for macOS devices. Enables application security assessment, allows identified developers while maintaining security, enables XProtect malware upload for threat intelligence, and prevents users from overriding these critical security policies through system preferences.
 
-**Source:** `configurations\intune\pol-sec-003-gatekeeper.json`  
+**Source:** `configurations/intune/pol-sec-003-gatekeeper.json`  
 **Settings:** 4
 
 | Key | Value |
@@ -314,7 +315,7 @@ Comprehensive Gatekeeper and system policy security configuration for macOS devi
 
 Disables guest account access to enhance security on managed macOS devices. Guest accounts can bypass security policies and provide unauthorized access to the system, making this configuration essential for enterprise security.
 
-**Source:** `configurations\intune\pol-sec-004-guest-account.json`  
+**Source:** `configurations/intune/pol-sec-004-guest-account.json`  
 **Settings:** 1
 
 | Key | Value |
@@ -326,7 +327,7 @@ Disables guest account access to enhance security on managed macOS devices. Gues
 
 Configures comprehensive screensaver security settings to protect unattended devices. Sets screensaver to activate after 10 minutes of inactivity (user setting), requires password authentication after 60 seconds of screensaver activation, sets login window idle timeout to 20 minutes, and enforces the Flurry screensaver module for both system and user contexts.
 
-**Source:** `configurations\intune\pol-sec-005-screensaver.json`  
+**Source:** `configurations/intune/pol-sec-005-screensaver.json`  
 **Settings:** 6
 
 | Key | Value |
@@ -343,7 +344,7 @@ Configures comprehensive screensaver security settings to protect unattended dev
 
 Comprehensive security policy for macOS devices that restricts various system features and applications to enhance enterprise security. Disables AirDrop, Activity Continuation, Game Center, cloud services, App Store, and other potentially risky features while maintaining core business functionality.
 
-**Source:** `configurations\intune\pol-sec-006-restrictions.json`  
+**Source:** `configurations/intune/pol-sec-006-restrictions.json`  
 **Settings:** 80
 
 | Key | Value |
@@ -447,7 +448,7 @@ Enables Recovery Lock on Apple Silicon Macs to prevent unauthorized access to ma
 
 Configures macOS devices to synchronize time with Apple's official time servers (time.apple.com) to ensure accurate system time across all managed devices. Essential for security features, certificate validation, and consistent logging.
 
-**Source:** `configurations\intune\pol-sys-100-ntp.json`  
+**Source:** `configurations/intune/pol-sys-100-ntp.json`  
 **Settings:** 1
 
 | Key | Value |
@@ -459,7 +460,7 @@ Configures macOS devices to synchronize time with Apple's official time servers 
 
 Configures approved login items and background processes for macOS devices. Allows specific applications (Palo Alto and Microsoft) to run background services by whitelisting their team identifiers, ensuring only trusted applications can automatically start at login.
 
-**Source:** `configurations\intune\pol-sys-101-login-items.json`  
+**Source:** `configurations/intune/pol-sys-101-login-items.json`  
 **Settings:** 8
 
 | Key | Value |
@@ -478,7 +479,7 @@ Configures approved login items and background processes for macOS devices. Allo
 
 Configures power management and energy saver settings for macOS devices. Sets display sleep to 5 minutes and system sleep to 10 minutes for both desktop (AC power) and portable devices. Enables Wake on LAN for desktop computers to allow network-based device management and remote wake capabilities.
 
-**Source:** `configurations\intune\pol-sys-102-power.json`  
+**Source:** `configurations/intune/pol-sys-102-power.json`  
 **Settings:** 5
 
 | Key | Value |
@@ -494,7 +495,7 @@ Configures power management and energy saver settings for macOS devices. Sets di
 
 Manages macOS software updates with automatic installation at 1:00 AM (3-day delay for latest updates), enables standard user OS updates, automatic download/install of OS and security updates, enables notifications and Rapid Security Response (RSR) updates for immediate threat mitigation.
 
-**Source:** `configurations\intune\pol-sys-103-software-update.json`  
+**Source:** `configurations/intune/pol-sys-103-software-update.json`  
 **Settings:** 9
 
 | Key | Value |
@@ -514,7 +515,7 @@ Manages macOS software updates with automatic installation at 1:00 AM (3-day del
 
 Enforces passcode requirements including length, complexity, failed attempts, and expiration.
 
-**Source:** `configurations\intune\pol-sys-104-ddm-passcode.json`  
+**Source:** `configurations/intune/pol-sys-104-ddm-passcode.json`  
 **Settings:** 11
 
 | Key | Value |
@@ -530,16 +531,6 @@ Enforces passcode requirements including length, complexity, failed attempts, an
 | `passcode_requirealphanumericpasscode` | `True` |
 | `passcode_requirecomplexpasscode` | `True` |
 | `passcode_requirepasscode` | `True` |
-
-
-### pol-sys-105-enrollment-restriction (EnrollmentRestriction)
-
-Controls macOS device enrollment settings and restrictions for managed devices. Allows both corporate and personal device enrollment. Use compliance policies for minimum OS version enforcement.
-
-**Source:** `configurations\intune\pol-sys-105-enrollment-restriction.json`  
-**Settings:** 0
-
-_No payload settings discovered_
 
 
 ### pol-sys-105-enrollment-restriction (EnrollmentRestriction)
