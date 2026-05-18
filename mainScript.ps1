@@ -141,6 +141,20 @@ function Get-DistributedManifests {
                     }
                 }
             }
+            'LobApp' {
+        $pkgNode = $xmlRoot.Element('Package')
+                if ($pkgNode) {
+                    foreach ($p in $pkgNode.Elements()) {
+                        $propName = $p.Name.LocalName
+                        $val = $p.Value
+                        $mName = $propName.Substring(0,1).ToLower()+$propName.Substring(1)
+                        $obj | Add-Member -NotePropertyName $mName -NotePropertyValue $val -Force
+                    }
+                    if (-not $obj.PSObject.Properties['fileName'] -and $obj.filePath) {
+                        $obj | Add-Member -NotePropertyName fileName -NotePropertyValue ([IO.Path]::GetFileName($obj.filePath)) -Force
+                    }
+                }
+            }
         }
         $items += $obj
     }
@@ -295,7 +309,7 @@ if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
     Write-Host "  # Import only apps and assign to a group"
     Write-Host "  ./mainScript.ps1 --apps --assign-group `"All Managed Macs`"`n"
     Write-Host "  # Import config policies with custom prefix"
-    Write-Host "  ./mainScript.ps1 --config --prefix `"[POC]`"`n"
+    Write-Host "  ./mainScript.ps1 --config --prefix `"[Production]`"`n"
     Write-Host "  # Connect to a specific tenant"
     Write-Host "  ./mainScript.ps1 --tenant-id `"12345678-1234-1234-1234-123456789012`"`n"
     Write-Host "  # Remove all objects with the default prefix"
@@ -879,12 +893,12 @@ function Invoke-macOSLobAppUpload() {
 
         # Create the Intune application object in the service
         Write-Host "Creating application in Intune..." -ForegroundColor Yellow
-        $mobileApp = New-MgBetaDeviceAppManagementMobileApp -BodyParameter $body
+        $mobileApp = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps" -Body ($body | ConvertTo-Json -Depth 5) -ContentType "application/json"
         $mobileAppId = $mobileApp.id
 
         # Get the content version for the new app (this will always be 1 until the new app is committed).
         Write-Host "Creating Content Version in the service for the application..." -ForegroundColor Yellow
-        $ContentVersion = New-MgBetaDeviceAppManagementMobileAppAsMacOSPkgAppContentVersion -MobileAppId $mobileAppId -BodyParameter @{}
+        $ContentVersion = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSPkgApp/contentVersions" -Body '{}' -ContentType "application/json"
         $ContentVersionId = $ContentVersion.id
 
         # Encrypt file and get file information
@@ -905,7 +919,7 @@ function Invoke-macOSLobAppUpload() {
 
         # Create a new file entry in Azure for the upload
         Write-Host "Creating a new file entry in Azure for the upload..." -ForegroundColor Yellow
-        $ContentVersionFile = New-MgBetaDeviceAppManagementMobileAppAsMacOSPkgAppContentVersionFile -MobileAppId $mobileAppId -MobileAppContentId $ContentVersionId -BodyParameter $ContentVersionFileBody
+        $ContentVersionFile = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSPkgApp/contentVersions/$ContentVersionId/files" -Body ($ContentVersionFileBody | ConvertTo-Json) -ContentType "application/json"
         $ContentVersionFileId = $ContentVersionFile.id
 
         # Get the file URI for the upload
@@ -922,7 +936,8 @@ function Invoke-macOSLobAppUpload() {
     UploadFileToAzureStorage $file.azureStorageUri $sasUriRenewTime $tempFile $BlockSizeMB 
 
         Write-Host "Committing the file to the service..." -ForegroundColor Yellow
-        Invoke-MgBetaCommitDeviceAppManagementMobileAppMicrosoftGraphMacOSPkgAppContentVersionFile -MobileAppId $mobileAppId -MobileAppContentId $ContentVersionId -MobileAppContentFileId $ContentVersionFileId -BodyParameter ($encryptionInfo | ConvertTo-Json)
+        $fileCommitUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSPkgApp/contentVersions/$ContentVersionId/files/$ContentVersionFileId/commit"
+        Invoke-MgGraphRequest -Method POST -Uri $fileCommitUri -Body ($encryptionInfo | ConvertTo-Json) -ContentType "application/json"
 
         # Wait for the service to process the commit file request.
         Write-Host "Waiting for the service to process the file commit request..." -ForegroundColor Yellow
@@ -935,7 +950,7 @@ function Invoke-macOSLobAppUpload() {
             committedContentVersion = "1"
         }
         
-        Update-MgBetaDeviceAppManagementMobileApp -MobileAppId $mobileAppId -BodyParameter $params
+        Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId" -Body ($params | ConvertTo-Json) -ContentType "application/json"
 
         # Wait for the service to process the commit app request.
         Write-Host "Waiting for the service to process the app commit request..." -ForegroundColor Yellow
@@ -943,15 +958,15 @@ function Invoke-macOSLobAppUpload() {
         $AppCheckAttempts = 25
         while ($AppCheckAttempts -gt 0) {
             $AppCheckAttempts--
-            $AppStatus = Get-MgBetaDeviceAppManagementMobileApp -MobileAppId $mobileAppId
-            if ($AppStatus.PublishingState -eq "published") {
+            $AppStatus = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId"
+            if ($AppStatus.publishingState -eq "published") {
                 Write-Host "Application created successfully." -ForegroundColor Green
                 break
             }
             Start-Sleep -Seconds 3
         }
 
-        if ($AppStatus.PublishingState -ne "published" -and $AppStatus.PublishingState -ne "processing") {
+        if ($AppStatus.publishingState -ne "published" -and $AppStatus.publishingState -ne "processing") {
             Write-Host "Application '$displayName' has failed to upload to Intune." -ForegroundColor Red
             throw "Application '$displayName' has failed to upload to Intune."
         }
@@ -962,24 +977,159 @@ function Invoke-macOSLobAppUpload() {
     }
     catch {
         Write-Host "Application '$displayName' has failed to upload to Intune." -ForegroundColor Red
-        # In the event that the creation of the app record in Intune succeeded, but processing/file upload failed, you can remove the comment block around the code below to delete the app record.
-        # This will allow you to re-run the script without having to manually delete the incomplete app record.
-        # Note: This will only work if the app record was successfully created in Intune.
-
-        <#
-        if ($mobileAppId) {
-            Write-Host "Removing the incomplete application record from Intune..." -ForegroundColor Yellow
-            Remove-MgDeviceAppManagementMobileApp -MobileAppId $mobileAppId
-        }
-        #>
         Write-Error "Aborting with exception: $($_.Exception.ToString())"
         throw $_
     }
     finally {
-        # Cleaning up temporary files and directories
         Remove-Item -Path "$tempFile" -Force -ErrorAction SilentlyContinue
     }
-    try { return (Get-MgBetaDeviceAppManagementMobileApp -MobileAppId $mobileAppId) } catch { }
+    try { return (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId") } catch { }
+}
+
+####################################################
+# Function to upload a macOS Line of Business app (macOSLobApp) to Intune
+# This uses the correct #microsoft.graph.macOSLobApp type with bundleId, buildNumber, childApps
+function Invoke-MacOSLobAppUploadReal {
+    param(
+        [Parameter(Mandatory = $true)] [string]$SourceFile,
+        [Parameter(Mandatory = $true)] [string]$displayName,
+        [Parameter(Mandatory = $true)] [string]$Description,
+        [Parameter(Mandatory = $true)] [string]$Publisher,
+        [Parameter(Mandatory = $true)] [string]$BundleId,
+        [Parameter(Mandatory = $true)] [string]$BuildNumber,
+        [Parameter(Mandatory = $false)] [string]$VersionNumber = "",
+        [Parameter(Mandatory = $false)] [hashtable]$MinimumSupportedOperatingSystem = @{ "v14_0" = $true },
+        [Parameter(Mandatory = $false)] [bool]$IgnoreVersionDetection = $true,
+        [Parameter(Mandatory = $false)] [bool]$InstallAsManaged = $true,
+        [Parameter(Mandatory = $false)] [int64]$ChunkSizeMB = 6
+    )
+
+    $mobileAppId = $null
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    $fileName = [System.IO.Path]::GetFileName($SourceFile)
+
+    try {
+        # Build the macOSLobApp body
+        $appBody = @{
+            "@odata.type"                    = "#microsoft.graph.macOSLobApp"
+            displayName                      = $displayName
+            description                      = $Description
+            publisher                        = $Publisher
+            fileName                         = $fileName
+            bundleId                         = $BundleId
+            buildNumber                      = $BuildNumber
+            versionNumber                    = $VersionNumber
+            childApps                        = @(
+                @{
+                    bundleId      = $BundleId
+                    buildNumber   = $BuildNumber
+                    versionNumber = "0.0"
+                }
+            )
+            installAsManaged                 = $InstallAsManaged
+            ignoreVersionDetection           = $IgnoreVersionDetection
+            minimumSupportedOperatingSystem  = $MinimumSupportedOperatingSystem
+            md5Hash                          = @()
+            md5HashChunkSize                 = 0
+            isFeatured                       = $false
+            categories                       = @()
+            roleScopeTagIds                  = @()
+            informationUrl                   = ""
+            privacyInformationUrl            = ""
+            developer                        = ""
+            notes                            = ""
+            owner                            = ""
+        }
+
+        Write-Host "Creating application in Intune: $displayName" -ForegroundColor Yellow
+        $mobileApp = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps" -Body ($appBody | ConvertTo-Json -Depth 5) -ContentType "application/json"
+        $mobileAppId = $mobileApp.id
+        Write-Host "App created with ID: $mobileAppId" -ForegroundColor Green
+
+        # Create content version
+        Write-Host "Creating content version..." -ForegroundColor Yellow
+        $contentVersion = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSLobApp/contentVersions" -Body '{}' -ContentType "application/json"
+        $ContentVersionId = $contentVersion.id
+        Write-Host "Content version ID: $ContentVersionId" -ForegroundColor Green
+
+        # Encrypt the file
+        Write-Host "Encrypting file..." -ForegroundColor Yellow
+        $encryptionInfo = EncryptFile $SourceFile $tempFile
+        $Size = (Get-Item $SourceFile).Length
+        $EncrySize = (Get-Item $tempFile).Length
+
+        # Create file entry in content version
+        Write-Host "Creating file entry..." -ForegroundColor Yellow
+        $fileBody = @{
+            "@odata.type" = "#microsoft.graph.mobileAppContentFile"
+            name          = $fileName
+            size          = $Size
+            sizeEncrypted = $EncrySize
+            manifest      = $null
+            isDependency  = $false
+        }
+        $fileResult = Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSLobApp/contentVersions/$ContentVersionId/files" -Body ($fileBody | ConvertTo-Json) -ContentType "application/json"
+        $ContentVersionFileId = $fileResult.id
+        Write-Host "File entry ID: $ContentVersionFileId" -ForegroundColor Green
+
+        # Wait for Azure Storage URI
+        Write-Host "Waiting for Azure Storage URI..." -ForegroundColor Yellow
+        $fileUri = "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSLobApp/contentVersions/$ContentVersionId/files/$ContentVersionFileId"
+        $file = WaitForFileProcessing $fileUri "AzureStorageUriRequest"
+        $sasUriRenewTime = (Get-Date $file.azureStorageUriExpirationDateTime).AddMinutes(-3)
+
+        # Upload file to Azure Storage
+        Write-Host "Uploading file to Azure Storage..." -ForegroundColor Yellow
+        [UInt64]$BlockSizeMB = [UInt64]$ChunkSizeMB
+        UploadFileToAzureStorage $file.azureStorageUri $sasUriRenewTime $tempFile $BlockSizeMB $mobileAppId $ContentVersionId $ContentVersionFileId
+
+        # Commit the file
+        Write-Host "Committing the file..." -ForegroundColor Yellow
+        Invoke-MgGraphRequest -Method POST -Uri "$fileUri/commit" -Body ($encryptionInfo | ConvertTo-Json) -ContentType "application/json"
+
+        # Wait for the service to process the commit
+        Write-Host "Waiting for file commit processing..." -ForegroundColor Yellow
+        $file = WaitForFileProcessing $fileUri "CommitFile"
+
+        # Commit the content version to the app
+        Write-Host "Committing content version to app..." -ForegroundColor Yellow
+        $commitBody = @{
+            "@odata.type"           = "#microsoft.graph.macOSLobApp"
+            committedContentVersion = "1"
+        }
+        Invoke-MgGraphRequest -Method PATCH -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId" -Body ($commitBody | ConvertTo-Json) -ContentType "application/json"
+
+        # Wait for publish
+        Write-Host "Waiting for app to be published..." -ForegroundColor Yellow
+        $AppCheckAttempts = 25
+        while ($AppCheckAttempts -gt 0) {
+            $AppCheckAttempts--
+            $AppStatus = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId"
+            if ($AppStatus.publishingState -eq "published") {
+                Write-Host "Application created successfully." -ForegroundColor Green
+                break
+            }
+            Start-Sleep -Seconds 3
+        }
+
+        if ($AppStatus.publishingState -ne "published" -and $AppStatus.publishingState -ne "processing") {
+            Write-Host "Application '$displayName' has failed to upload to Intune." -ForegroundColor Red
+            throw "Application '$displayName' has failed to upload to Intune."
+        }
+        else {
+            Write-Host "Application '$displayName' has been successfully uploaded to Intune." -ForegroundColor Green
+            $AppStatus | Format-List
+        }
+    }
+    catch {
+        Write-Host "Application '$displayName' has failed to upload to Intune." -ForegroundColor Red
+        Write-Error "Aborting with exception: $($_.Exception.ToString())"
+        throw $_
+    }
+    finally {
+        Remove-Item -Path "$tempFile" -Force -ErrorAction SilentlyContinue
+    }
+    try { return (Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId") } catch { }
 }
 
 ####################################################
@@ -1065,7 +1215,7 @@ function UploadFileToAzureStorage($sasUri, $sasUriRenewTime, $filepath, $blockSi
         # Renew the SAS URI if it is about to expire.
         if ((Get-Date).ToUniversalTime() -ge $sasUriRenewTime) {
             Write-Host "Renewing the SAS URI for the file upload..." -ForegroundColor Yellow
-            Invoke-MgRenewDeviceAppManagementMobileAppMicrosoftGraphMacOSLobAppContentVersionFileUpload -MobileAppId $mobileAppId -MobileAppContentId $ContentVersionId -MobileAppContentFileId $ContentVersionFileId
+            Invoke-MgGraphRequest -Method POST -Uri "https://graph.microsoft.com/beta/deviceAppManagement/mobileApps/$mobileAppId/microsoft.graph.macOSLobApp/contentVersions/$ContentVersionId/files/$ContentVersionFileId/renewUpload" -ContentType "application/json"
             $file = WaitForFileProcessing $fileUri "AzureStorageUriRenewal"
             $sasUri = $file.azureStorageUri
             $sasUriRenewTime = $file.azureStorageUriExpirationDateTime.AddMinutes(-3)
@@ -1584,7 +1734,50 @@ if ($importEnrollmentRestrictions) {
 # Enumerate packages/apps
 if ($importPackages) {
     $createdAppIds = @()
-    $packages = $distributedItems | Where-Object { $_.type -in @('Package','App') }
+
+    # Download latest Company Portal installer if the manifest references it
+    $cpPkgPath = Join-Path $repoRoot "apps/CompanyPortal-Installer.pkg"
+    $cpManifestExists = $distributedItems | Where-Object { $_.type -in @('Package','App','LobApp') -and $_.filePath -eq 'apps/CompanyPortal-Installer.pkg' }
+    if ($cpManifestExists) {
+        if (Test-Path -LiteralPath $cpPkgPath) {
+            Remove-Item -LiteralPath $cpPkgPath -Force
+            Write-Host "Removed existing CompanyPortal-Installer.pkg" -ForegroundColor DarkGray
+        }
+        Write-Host "Downloading latest Company Portal installer..." -ForegroundColor Cyan
+        try {
+            $ProgressPreference = 'SilentlyContinue'
+            Invoke-WebRequest -Uri "https://go.microsoft.com/fwlink/?linkid=853070" -OutFile $cpPkgPath -UseBasicParsing
+            $ProgressPreference = 'Continue'
+            $cpSize = (Get-Item $cpPkgPath).Length / 1MB
+            Write-Host ("✓ Downloaded CompanyPortal-Installer.pkg ({0:N1} MB)" -f $cpSize) -ForegroundColor Green
+
+            # Extract version from pkg and update manifest XML
+            $cpManifestPath = Join-Path $repoRoot "apps/app-sys-001-company-portal.xml"
+            if (Test-Path -LiteralPath $cpManifestPath) {
+                $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "cp_pkg_extract_$([System.Guid]::NewGuid().ToString('N'))"
+                try {
+                    $null = & pkgutil --expand-full $cpPkgPath $tmpDir 2>&1
+                    $infoPlist = Get-ChildItem -Path $tmpDir -Recurse -Filter "Info.plist" | Where-Object { $_.FullName -match "Company Portal\.app/Contents/Info\.plist" } | Select-Object -First 1
+                    if ($infoPlist) {
+                        $pkgVersion = & /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" $infoPlist.FullName 2>$null
+                        if ($pkgVersion) {
+                            $pkgVersion = $pkgVersion.Trim()
+                            [xml]$manifestXml = Get-Content $cpManifestPath -Raw
+                            $manifestXml.MacIntuneManifest.Package.PrimaryBundleVersion = $pkgVersion
+                            $manifestXml.Save($cpManifestPath)
+                            Write-Host "  Updated PrimaryBundleVersion to $pkgVersion" -ForegroundColor Green
+                        }
+                    }
+                } finally {
+                    if (Test-Path $tmpDir) { Remove-Item $tmpDir -Recurse -Force }
+                }
+            }
+        } catch {
+            Write-Warning "Failed to download Company Portal: $($_.Exception.Message)"
+        }
+    }
+
+    $packages = $distributedItems | Where-Object { $_.type -in @('Package','App','LobApp') }
 
     Write-Host "Found $($packages.Count) packages/apps:`n" -ForegroundColor Cyan
 
@@ -1663,12 +1856,24 @@ if ($importPackages) {
         continue
     }
     if (-not (Test-BetaModule)) { Write-Host "Required beta Graph module missing; skipping package upload." -ForegroundColor Red; continue }
-    $appResult = Invoke-macOSLobAppUpload -SourceFile $assetPath `
-            -displayName "$($displayName)" -Publisher "$($a.publisher)" -Description "$($desc)" `
-            -primaryBundleId "$($a.primaryBundleId)" -primaryBundleVersion "$($a.primaryBundleVersion)" `
-            -preInstallScriptPath $preinstallScript -postInstallScriptPath $postInstallScript `
-            -includedApps $includedApps -minimumSupportedOperatingSystem $minimumSupportedOperatingSystem `
-            -ignoreVersionDetection $ignoreVersionDetection -ChunkSizeMB 8
+
+    if ($a.type -eq 'LobApp') {
+        # Use macOSLobApp upload (correct Graph type)
+        $installAsManaged = if ($a.installAsManaged -eq "true") { $true } else { $false }
+        $appResult = Invoke-MacOSLobAppUploadReal -SourceFile $assetPath `
+                -displayName "$($displayName)" -Publisher "$($a.publisher)" -Description "$($desc)" `
+                -BundleId "$($a.primaryBundleId)" -BuildNumber "$($a.primaryBundleVersion)" `
+                -MinimumSupportedOperatingSystem $minimumSupportedOperatingSystem `
+                -IgnoreVersionDetection $ignoreVersionDetection -InstallAsManaged $installAsManaged -ChunkSizeMB 8
+    } else {
+        # Use macOSPkgApp upload (existing behavior for Package/App types)
+        $appResult = Invoke-macOSLobAppUpload -SourceFile $assetPath `
+                -displayName "$($displayName)" -Publisher "$($a.publisher)" -Description "$($desc)" `
+                -primaryBundleId "$($a.primaryBundleId)" -primaryBundleVersion "$($a.primaryBundleVersion)" `
+                -preInstallScriptPath $preinstallScript -postInstallScriptPath $postInstallScript `
+                -includedApps $includedApps -minimumSupportedOperatingSystem $minimumSupportedOperatingSystem `
+                -ignoreVersionDetection $ignoreVersionDetection -ChunkSizeMB 8
+    }
     if ($appResult -and $appResult.id) { $createdAppIds += $appResult.id } else { Write-Warning "Could not capture app ID for: $displayName" }
 
     }

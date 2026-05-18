@@ -23,6 +23,7 @@
                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationGroupSettingCollectionInstance",
                 "settingDefinitionId": "com.apple.extensiblesso_com.apple.extensiblesso",
                 "settingInstanceTemplateReference": null,
+                "auditRuleInformation": null,
                 "groupSettingCollectionValue": [
                     {
                         "settingValueTemplateReference": null,
@@ -31,6 +32,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_authenticationmethod",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "choiceSettingValue": {
                                     "settingValueTemplateReference": null,
                                     "value": "com.apple.extensiblesso_authenticationmethod_1",
@@ -41,6 +43,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_extensionidentifier",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "simpleSettingValue": {
                                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                                     "settingValueTemplateReference": null,
@@ -51,6 +54,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationGroupSettingCollectionInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "groupSettingCollectionValue": [
                                     {
                                         "settingValueTemplateReference": null,
@@ -59,6 +63,7 @@
                                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
                                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso_authenticationmethod",
                                                 "settingInstanceTemplateReference": null,
+                                                "auditRuleInformation": null,
                                                 "choiceSettingValue": {
                                                     "settingValueTemplateReference": null,
                                                     "value": "com.apple.extensiblesso_platformsso_authenticationmethod_1",
@@ -66,9 +71,21 @@
                                                 }
                                             },
                                             {
+                                                "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+                                                "settingDefinitionId": "com.apple.extensiblesso_platformsso_enableregistrationduringsetup",
+                                                "settingInstanceTemplateReference": null,
+                                                "auditRuleInformation": null,
+                                                "choiceSettingValue": {
+                                                    "settingValueTemplateReference": null,
+                                                    "value": "com.apple.extensiblesso_platformsso_enableregistrationduringsetup_true",
+                                                    "children": []
+                                                }
+                                            },
+                                            {
                                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationGroupSettingCollectionInstance",
                                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso_tokentousermapping",
                                                 "settingInstanceTemplateReference": null,
+                                                "auditRuleInformation": null,
                                                 "groupSettingCollectionValue": [
                                                     {
                                                         "settingValueTemplateReference": null,
@@ -77,6 +94,7 @@
                                                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
                                                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso_tokentousermapping_accountname",
                                                                 "settingInstanceTemplateReference": null,
+                                                                "auditRuleInformation": null,
                                                                 "simpleSettingValue": {
                                                                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                                                                     "settingValueTemplateReference": null,
@@ -87,6 +105,7 @@
                                                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
                                                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso_tokentousermapping_fullname",
                                                                 "settingInstanceTemplateReference": null,
+                                                                "auditRuleInformation": null,
                                                                 "simpleSettingValue": {
                                                                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                                                                     "settingValueTemplateReference": null,
@@ -101,6 +120,7 @@
                                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
                                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso_useshareddevicekeys",
                                                 "settingInstanceTemplateReference": null,
+                                                "auditRuleInformation": null,
                                                 "choiceSettingValue": {
                                                     "settingValueTemplateReference": null,
                                                     "value": "com.apple.extensiblesso_platformsso_useshareddevicekeys_true",
@@ -111,6 +131,7 @@
                                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
                                                 "settingDefinitionId": "com.apple.extensiblesso_platformsso_userauthorizationmode",
                                                 "settingInstanceTemplateReference": null,
+                                                "auditRuleInformation": null,
                                                 "choiceSettingValue": {
                                                     "settingValueTemplateReference": null,
                                                     "value": "com.apple.extensiblesso_platformsso_userauthorizationmode_1",
@@ -125,6 +146,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_registrationtoken",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "simpleSettingValue": {
                                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                                     "settingValueTemplateReference": null,
@@ -135,6 +157,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_screenlockedbehavior",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "choiceSettingValue": {
                                     "settingValueTemplateReference": null,
                                     "value": "com.apple.extensiblesso_screenlockedbehavior_0",
@@ -145,6 +168,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_teamidentifier",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "simpleSettingValue": {
                                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                                     "settingValueTemplateReference": null,
@@ -155,6 +179,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_type",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "choiceSettingValue": {
                                     "settingValueTemplateReference": null,
                                     "value": "com.apple.extensiblesso_type_1",
@@ -165,6 +190,7 @@
                                 "@odata.type": "#microsoft.graph.deviceManagementConfigurationSimpleSettingCollectionInstance",
                                 "settingDefinitionId": "com.apple.extensiblesso_urls",
                                 "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
                                 "simpleSettingCollectionValue": [
                                     {
                                         "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",

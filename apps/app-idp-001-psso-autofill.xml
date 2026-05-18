@@ -1,0 +1,18 @@
+<MacIntuneManifest>
+  <ReferenceId>APP-IDP-001</ReferenceId>
+  <Version>1.0</Version>
+  <Type>Package</Type>
+  <Name>APP-IDP-001 - Platform SSO AutoFill</Name>
+  <Description>Installs the Platform SSO AutoFill extension package. The pre-install script verifies that the device is registered with Platform SSO and that the Company Portal AutoFill extension is available and enabled before proceeding with installation.</Description>
+  <Platform>macOS</Platform>
+  <Category>Config</Category>
+  <SourceFile>apps/PSSOautofill.pkg</SourceFile>
+  <Package>
+    <PrimaryBundleId>com.intune.PSSOautofill</PrimaryBundleId>
+    <PrimaryBundleVersion>1.0</PrimaryBundleVersion>
+    <Publisher>Microsoft Corporation</Publisher>
+    <MinimumSupportedOperatingSystem>v14_0</MinimumSupportedOperatingSystem>
+    <IgnoreVersionDetection>true</IgnoreVersionDetection>
+    <PreInstallScript>apps/Check-PSSO.zsh</PreInstallScript>
+  </Package>
+</MacIntuneManifest>
