@@ -8,6 +8,7 @@ The format is loosely based on [Keep a Changelog](https://keepachangelog.com/en/
 
 | Date | Change | Details | Author |
 |------|--------|---------|--------|
+| 2026-05-19 | **Improved** onboarding app list visuals | All rows in [`scripts/intune/scr-utl-100-dialog-onboarding.sh`](scripts/intune/scr-utl-100-dialog-onboarding.sh) now launch with an animated `wait` spinner and an `SF=arrow.down.circle` "queued for download" placeholder icon, then bloom into the real app bundle icon as each install is detected. Avoids the generic SwiftDialog question-mark glyph for apps not yet on disk. | Neil Johnson |
 | 2026-05-18 | **Added** Platform SSO during Setup Assistant + PSSO autofill | New [`apps/Check-PSSO.zsh`](apps/Check-PSSO.zsh), `PSSOautofill.pkg`, bundled `CompanyPortal-Installer.pkg`, app manifests `app-idp-001-psso-autofill.xml` and `app-sys-001-company-portal.xml`, plus updates to [`configurations/entra/cfg-idp-001-platform-sso.json`](configurations/entra/cfg-idp-001-platform-sso.json) and significant `mainScript.ps1` enhancements. | Chris Kunze |
 | 2026-05-18 | **Updated** README, SUPPORT, blog, and inline examples | Documentation refresh. | Neil Johnson |
 | 2026-05-14 | **Added** SwiftDialog GUI launcher | New [`Start-IntuneMyMacs.ps1`](Start-IntuneMyMacs.ps1) provides a native macOS frontend over `mainScript.ps1`. | Chris Kunze |

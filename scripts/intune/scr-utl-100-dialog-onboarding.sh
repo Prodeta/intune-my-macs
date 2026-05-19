@@ -23,6 +23,11 @@ DIALOG_WAIT_MINUTES=20
 DESKTOP_TIMEOUT_MINUTES=15
 SLEEP_SECONDS=5
 
+# Placeholder icon shown next to each app until its .app bundle lands on disk.
+# SwiftDialog SF Symbol syntax: any symbol from Apple's SF Symbols library.
+# arrow.down.circle reads as "queued for download / install".
+PLACEHOLDER_ICON="SF=arrow.down.circle"
+
 # Microsoft logo - embedded base64 to ensure icon is available without external dependencies
 # To replace this icon, convert your image to base64 with:
 #   base64 -i /path/to/image.png | tr -d '\n'
@@ -164,11 +169,16 @@ check_app_installed() {
     return 1
 }
 
-# Function to update dialog list item
+# Function to update dialog list item.
+# Optional 4th arg swaps the row's icon (e.g. placeholder -> real app bundle on detection).
 update_dialog_item() {
     local item_name="$1"
     local item_status="$2"
     local status_text="$3"
+    local item_icon="${4:-}"
+    if [[ -n "$item_icon" ]]; then
+        echo "listitem: title: $item_name, icon: $item_icon" >> "$DIALOG_CMD"
+    fi
     echo "listitem: title: $item_name, status: $item_status, statustext: $status_text" >> "$DIALOG_CMD"
 }
 
@@ -188,13 +198,21 @@ update_dialog_progress_text() {
 rm -f "$DIALOG_CMD"
 touch "$DIALOG_CMD"
 
-# Build list item arguments array
+# Build list item arguments array.
+# If the app bundle already exists (e.g. a prior run installed it), use its real icon
+# straight away; otherwise show the placeholder until Intune lands the bundle.
+# status=wait gives each row an animated spinner so the list feels alive while we wait.
 LISTITEM_ARGS=()
 for app_entry in "${APPS_TO_MONITOR[@]}"; do
     app_name="${app_entry%%|*}"
     remainder="${app_entry#*|}"
     app_bundle="${remainder%%|*}"
-    LISTITEM_ARGS+=("--listitem" "${app_name},icon=${app_bundle},status=pending,statustext=Waiting...")
+    if [[ -d "$app_bundle" ]]; then
+        list_icon="$app_bundle"
+    else
+        list_icon="$PLACEHOLDER_ICON"
+    fi
+    LISTITEM_ARGS+=("--listitem" "${app_name},icon=${list_icon},status=wait,statustext=Waiting...")
 done
 
 # Launch Swift Dialog
@@ -256,7 +274,8 @@ while true; do
             log "PHASE 3 | DETECTED: $app_name"
             app_status[$app_name]="installed"
             ((apps_installed++))
-            update_dialog_item "$app_name" "success" "Installed"
+            # Swap the placeholder for the real app icon now that the bundle exists.
+            update_dialog_item "$app_name" "success" "Installed" "$app_bundle"
             update_dialog_progress "$apps_installed"
             update_dialog_progress_text "$apps_installed of $total_apps applications installed"
         fi
