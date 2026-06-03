@@ -1,0 +1,11 @@
+<MacIntuneManifest>
+  <ReferenceId>POL-APP-101</ReferenceId>
+  <Version>1.0</Version>
+  <Type>Policy</Type>
+  <Name>POL-APP-101 - Company Portal Privacy Preferences (PPPC)</Name>
+  <Description>Grants Company Portal (com.microsoft.CompanyPortalMac) App Management (SystemPolicyAppBundles) access via a Privacy Preferences Policy Control settings-catalog profile.</Description>
+  <Platform>macOS</Platform>
+  <Category>Privacy</Category>
+  <SourceFile>configurations/intune/pol-app-101-company-portal-pppc.json</SourceFile>
+  <SettingsCount>1</SettingsCount>
+</MacIntuneManifest>
