@@ -629,7 +629,7 @@ Downloads and installs Microsoft Company Portal from a signed PKG. Automatically
 
 ### scr-app-101-install-edge (Script)
 
-Downloads and installs Microsoft Edge from the official Microsoft download URL. Uses aria2c for optimized downloading when available, with automatic fallback to curl. Performs intelligent update checking via HTTP Last-Modified headers to avoid unnecessary reinstalls. Waits for Edge to close before updating if running.
+Downloads and installs Microsoft Edge from the official Microsoft download URL using curl. Skips installation if Edge is already present, since Microsoft AutoUpdate (MAU) handles updates. Waits for the user desktop before running to avoid executing during Setup Assistant.
 
 **Source:** `scripts/intune/scr-app-101-install-edge.sh`  
 **Settings:** 4
