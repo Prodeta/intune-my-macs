@@ -2,11 +2,11 @@
 
 ## Configuration Documentation
 
-**Generated:** May 18, 2026
+**Generated:** June 15, 2026
 
-**Total Artifacts:** 37
+**Total Artifacts:** 42
 
-## About Intune My Macs
+# About Intune My Macs
 
 > **Proof of Concept — not for production use.** This repository is published as sample code to help teams evaluate and learn Microsoft Intune for macOS. The configurations and scripts are not a hardened baseline, are provided as-is without warranty or support, and must be reviewed, tested, and adapted before being deployed to managed devices.
 
@@ -27,22 +27,26 @@ This repository contains the following artifact types:
 
 This document catalogs all configuration artifacts with complete settings details. Use the Index to quickly locate specific configurations, then refer to the detailed sections for complete settings breakdowns.
 
-## Index
+# Index
 
 Click any reference ID to jump to detailed configuration.
 
 | Ref | Type | Settings Count |
-| --- | ---- | -------------- |
+|-----|------|----------------|
+| [CompanyPortal-Installer](#companyportal-installer-lobapp) | LobApp | 0 |
+| [PSSOautofill](#pssoautofill-package) | Package | 6 |
 | [app-utl-001-swift-dialog](#app-utl-001-swift-dialog-package) | Package | 5 |
 | [cat-sys-100-compatibility-checker](#cat-sys-100-compatibility-checker-customattribute) | CustomAttribute | 1 |
 | [cat-sys-101-intune-agent-version](#cat-sys-101-intune-agent-version-customattribute) | CustomAttribute | 1 |
-| [pol-idp-001-platform-sso](#pol-idp-001-platform-sso-policy) | Policy | 15 |
+| [cat-sys-102-rosetta-installed](#cat-sys-102-rosetta-installed-customattribute) | CustomAttribute | 1 |
 | [cfg-sec-001-login-window](#cfg-sec-001-login-window-customconfig) | CustomConfig | 4 |
 | [cfg-sec-002-screensaver-idle](#cfg-sec-002-screensaver-idle-customconfig) | CustomConfig | 1 |
 | [cfg-sys-100-wallpaper-pppc](#cfg-sys-100-wallpaper-pppc-customconfig) | CustomConfig | 1 |
 | [cmp-cmp-001-macos-baseline](#cmp-cmp-001-macos-baseline-compliance) | Compliance | 12 |
 | [pol-app-100-office](#pol-app-100-office-policy) | Policy | 15 |
+| [pol-app-101-company-portal-pppc](#pol-app-101-company-portal-pppc-policy) | Policy | 4 |
 | [pol-app-101-edge-level1](#pol-app-101-edge-level1-policy) | Policy | 22 |
+| [pol-idp-001-platform-sso](#pol-idp-001-platform-sso-policy) | Policy | 16 |
 | [pol-sec-001-filevault](#pol-sec-001-filevault-policy) | Policy | 9 |
 | [pol-sec-002-firewall](#pol-sec-002-firewall-policy) | Policy | 2 |
 | [pol-sec-003-gatekeeper](#pol-sec-003-gatekeeper-policy) | Policy | 4 |
@@ -56,6 +60,7 @@ Click any reference ID to jump to detailed configuration.
 | [pol-sys-103-software-update](#pol-sys-103-software-update-policy) | Policy | 9 |
 | [pol-sys-104-ddm-passcode](#pol-sys-104-ddm-passcode-policy) | Policy | 11 |
 | [pol-sys-105-enrollment-restriction](#pol-sys-105-enrollment-restriction-enrollmentrestriction) | EnrollmentRestriction | 0 |
+| [pol-sys-106-block-beta](#pol-sys-106-block-beta-policy) | Policy | 1 |
 | [scr-app-100-install-company-portal](#scr-app-100-install-company-portal-script) | Script | 4 |
 | [scr-app-101-install-edge](#scr-app-101-install-edge-script) | Script | 4 |
 | [scr-app-102-install-remote-help](#scr-app-102-install-remote-help-script) | Script | 4 |
@@ -71,7 +76,34 @@ Click any reference ID to jump to detailed configuration.
 | [scr-utl-100-dialog-onboarding](#scr-utl-100-dialog-onboarding-script) | Script | 4 |
 | [wallpaper](#wallpaper-resource) | Resource | 0 |
 
-## Detailed Configuration
+# Detailed Configuration
+
+### CompanyPortal-Installer (LobApp)
+
+Installs Microsoft Company Portal for macOS. Required for device enrollment, compliance evaluation, and access to corporate resources protected by Conditional Access. The app automatically updates via Microsoft AutoUpdate (MAU) after initial installation. Platform SSO version floors: 5.2404.0+ for general Platform SSO, 5.2604.0+ for Platform SSO during ADE / Setup Assistant. The bundled 5.2604.1 build satisfies both flows.
+
+**Source:** `apps/CompanyPortal-Installer.pkg`  
+**Settings:** 0
+
+_No payload settings discovered_
+
+
+### PSSOautofill (Package)
+
+Installs the Platform SSO AutoFill extension package. The pre-install script verifies that the device is registered with Platform SSO and that the Company Portal AutoFill extension is available and enabled before proceeding with installation.
+
+**Source:** `apps/PSSOautofill.pkg`  
+**Settings:** 6
+
+| Key | Value |
+|-----|-------|
+| `PrimaryBundleId` | `com.intune.PSSOautofill` |
+| `PrimaryBundleVersion` | `1.0` |
+| `Publisher` | `Microsoft Corporation` |
+| `MinimumSupportedOperatingSystem` | `v14_0` |
+| `IgnoreVersionDetection` | `true` |
+| `PreInstallScript` | `apps/Check-PSSO.zsh` |
+
 
 ### app-utl-001-swift-dialog (Package)
 
@@ -81,12 +113,13 @@ Installs Swift Dialog v2.5.6, a native macOS application for displaying rich, in
 **Settings:** 5
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `PrimaryBundleId` | `au.csiro.dialog` |
 | `PrimaryBundleVersion` | `2.5.6` |
 | `Publisher` | `Bart Reardon` |
 | `MinimumSupportedOperatingSystem` | `v13_0` |
 | `IgnoreVersionDetection` | `true` |
+
 
 ### cat-sys-100-compatibility-checker (CustomAttribute)
 
@@ -96,8 +129,9 @@ Determines the maximum supported macOS version for the current Mac by querying A
 **Settings:** 1
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `CustomAttributeType` | `string` |
+
 
 ### cat-sys-101-intune-agent-version (CustomAttribute)
 
@@ -107,44 +141,21 @@ Returns the version of the Microsoft Intune Agent (Sidecar) installed on the Mac
 **Settings:** 1
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `CustomAttributeType` | `string` |
 
-### pol-idp-001-platform-sso (Policy)
 
-Platform Single Sign-On (SSO) configuration for Microsoft Entra ID on macOS. NOTE: choice settings export as numeric values but the Settings Catalog UI shows names. See the numeric-to-name mapping below.
+### cat-sys-102-rosetta-installed (CustomAttribute)
 
-**Source:** `configurations/entra/pol-idp-001-platform-sso.json`  
-**Settings:** 15
+Returns "true" if Rosetta 2 is installed and working on this Mac, otherwise "false". Detection runs an x86_64 binary through `arch` as a functional test of the Rosetta runtime. Intel Macs always return "false" because Rosetta does not apply.
+
+**Source:** `custom attributes/cat-sys-102-rosetta-installed.zsh`  
+**Settings:** 1
 
 | Key | Value |
-| --- | ----- |
-| `com.apple.extensiblesso_authenticationmethod` | `1` |
-| `com.apple.extensiblesso_extensionidentifier` | `com.microsoft.CompanyPortalMac.ssoextension` |
-| `com.apple.extensiblesso_platformsso_authenticationmethod` | `1` |
-| `com.apple.extensiblesso_platformsso_tokentousermapping_accountname` | `preferred_username` |
-| `com.apple.extensiblesso_platformsso_tokentousermapping_fullname` | `name` |
-| `com.apple.extensiblesso_platformsso_useshareddevicekeys` | `True` |
-| `com.apple.extensiblesso_platformsso_userauthorizationmode` | `1` |
-| `com.apple.extensiblesso_registrationtoken` | `{{DEVICEREGISTRATION}}` |
-| `com.apple.extensiblesso_screenlockedbehavior` | `0` |
-| `com.apple.extensiblesso_teamidentifier` | `UBF8T346G9` |
-| `com.apple.extensiblesso_type` | `1` |
-| `com.apple.extensiblesso_urls[0]` | `https://login.microsoftonline.com` |
-| `com.apple.extensiblesso_urls[1]` | `https://login.microsoft.com` |
-| `com.apple.extensiblesso_urls[2]` | `https://sts.windows.net` |
+|-----|-------|
+| `CustomAttributeType` | `string` |
 
-**Numeric-to-name mapping (choice settings)**
-
-The Settings Catalog stores these choices as numbers, while the Intune admin center UI shows names:
-
-| Setting | Shipped value | Settings Catalog UI name | Other options |
-| --- | --- | --- | --- |
-| `com.apple.extensiblesso_platformsso_authenticationmethod` | `1` | UserSecureEnclaveKey | `0` = Password, `2` = SmartCard |
-| `com.apple.extensiblesso_authenticationmethod` (deprecated, macOS 13) | `1` | UserSecureEnclaveKey | `0` = Password |
-| `com.apple.extensiblesso_platformsso_userauthorizationmode` | `1` | Admin | `0` = Standard, `2` = Groups |
-| `com.apple.extensiblesso_type` | `1` | Redirect | `0` = Credential |
-| `com.apple.extensiblesso_urls[3]` | `https://login-us.microsoftonline.com` |
 
 ### cfg-sec-001-login-window (CustomConfig)
 
@@ -154,11 +165,12 @@ Essential login window security configuration for macOS devices. Disables FileVa
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.loginwindow.AdminMayDisableMCX` | `False` |
 | `com.apple.loginwindow.DisableFDEAutoLogin` | `True` |
 | `com.apple.loginwindow.EnableExternalAccounts` | `False` |
 | `com.apple.loginwindow.com.apple.login.mcx.DisableAutoLoginClient` | `True` |
+
 
 ### cfg-sec-002-screensaver-idle (CustomConfig)
 
@@ -168,8 +180,9 @@ Configures screensaver idle time (10 minutes) to address Mac Evaluation Utility 
 **Settings:** 1
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.screensaver.idleTime` | `600` |
+
 
 ### cfg-sys-100-wallpaper-pppc (CustomConfig)
 
@@ -179,8 +192,9 @@ Pre-authorizes the Intune agent and osascript to send Apple Events to Finder for
 **Settings:** 1
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.TCC.configuration-profile-policy.Services` | `complex:dict` |
+
 
 ### cmp-cmp-001-macos-baseline (Compliance)
 
@@ -190,7 +204,7 @@ Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum 
 **Settings:** 12
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `passwordRequired` | `False` |
 | `storageRequireEncryption` | `True` |
 | `deviceThreatProtectionEnabled` | `False` |
@@ -204,6 +218,7 @@ Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum 
 | `scheduledActionsForRule.default.actionCount` | `1` |
 | `scheduledActionsForRule.default.action_0` | `block (grace: 0h)` |
 
+
 ### pol-app-100-office (Policy)
 
 Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activation, and Outlook experience settings. NOTE: AcknowledgedDataCollectionPolicy uses the integer/choice form (value 0 = required data only). MAU deprecated the legacy string form after early-2026 Office for Mac releases - only the numeric value is honoured; a string value silently reverts to the user default and re-prompts users.
@@ -212,7 +227,7 @@ Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activ
 **Settings:** 15
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy` | `0` |
 | `com.apple.managedclient.preferences_updatedeadline.daysbeforeforcedquit` | `3` |
 | `com.apple.managedclient.preferences_disableinsidercheckbox` | `True` |
@@ -229,6 +244,22 @@ Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activ
 | `com.apple.managedclient.preferences_enablenewoutlook` | `3` |
 | `com.apple.managedclient.preferences_userpreference_maxchecklistdisplaydurationmet` | `True` |
 
+
+### pol-app-101-company-portal-pppc (Policy)
+
+Grants Company Portal (com.microsoft.CompanyPortalMac) App Management (SystemPolicyAppBundles) access via a Privacy Preferences Policy Control settings-catalog profile.
+
+**Source:** `configurations/intune/pol-app-101-company-portal-pppc.json`  
+**Settings:** 4
+
+| Key | Value |
+|-----|-------|
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyappbundles_item_authorization` | `0` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyappbundles_item_coderequirement` | `identifier "com.microsoft.CompanyPortalMac" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6...` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyappbundles_item_identifier` | `com.microsoft.CompanyPortalMac` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyappbundles_item_identifiertype` | `0` |
+
+
 ### pol-app-101-edge-level1 (Policy)
 
 Enhanced basic browser configuration for Microsoft Edge addressing gap analysis findings (Certificate management, network policies, system integration). NOTE: AutoSelectCertificateForUrls ships with the placeholder domain *.contoso.com - replace it with your own URL pattern before deploying, or remove the setting if you do not use automatic client-certificate selection.
@@ -237,7 +268,7 @@ Enhanced basic browser configuration for Microsoft Edge addressing gap analysis 
 **Settings:** 22
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.managedclient.preferences_importautofillformdata` | `False` |
 | `com.apple.managedclient.preferences_importsavedpasswords` | `False` |
 | `com.apple.managedclient.preferences_personalizationreportingenabled` | `False` |
@@ -261,6 +292,34 @@ Enhanced basic browser configuration for Microsoft Edge addressing gap analysis 
 | `com.apple.managedclient.preferences_showhomebutton` | `True` |
 | `com.apple.managedclient.preferences_updatepolicyoverride` | `0` |
 
+
+### pol-idp-001-platform-sso (Policy)
+
+Platform Single Sign-On (SSO) configuration for Microsoft Entra ID on macOS. NOTE: choice settings export as numeric values but the Settings Catalog UI shows names. In this profile: Platform SSO Authentication Method 1 = UserSecureEnclaveKey (0 = Password, 2 = SmartCard); User Authorization Mode 1 = Admin (0 = Standard, 2 = Groups); SSO Extension Type 1 = Redirect (0 = Credential). See the numeric-to-name mapping table in README.md.
+
+**Source:** `configurations/entra/pol-idp-001-platform-sso.json`  
+**Settings:** 16
+
+| Key | Value |
+|-----|-------|
+| `com.apple.extensiblesso_authenticationmethod` | `1` |
+| `com.apple.extensiblesso_extensionidentifier` | `com.microsoft.CompanyPortalMac.ssoextension` |
+| `com.apple.extensiblesso_platformsso_authenticationmethod` | `1` |
+| `com.apple.extensiblesso_platformsso_enableregistrationduringsetup` | `True` |
+| `com.apple.extensiblesso_platformsso_tokentousermapping_accountname` | `preferred_username` |
+| `com.apple.extensiblesso_platformsso_tokentousermapping_fullname` | `name` |
+| `com.apple.extensiblesso_platformsso_useshareddevicekeys` | `True` |
+| `com.apple.extensiblesso_platformsso_userauthorizationmode` | `1` |
+| `com.apple.extensiblesso_registrationtoken` | `{{DEVICEREGISTRATION}}` |
+| `com.apple.extensiblesso_screenlockedbehavior` | `0` |
+| `com.apple.extensiblesso_teamidentifier` | `UBF8T346G9` |
+| `com.apple.extensiblesso_type` | `1` |
+| `com.apple.extensiblesso_urls[0]` | `https://login.microsoftonline.com` |
+| `com.apple.extensiblesso_urls[1]` | `https://login.microsoft.com` |
+| `com.apple.extensiblesso_urls[2]` | `https://sts.windows.net` |
+| `com.apple.extensiblesso_urls[3]` | `https://login-us.microsoftonline.com` |
+
+
 ### pol-sec-001-filevault (Policy)
 
 Configures FileVault disk encryption on macOS devices during Setup Assistant with recovery key escrow.
@@ -269,7 +328,7 @@ Configures FileVault disk encryption on macOS devices during Setup Assistant wit
 **Settings:** 9
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.mcx.filevault2_defer` | `True` |
 | `com.apple.mcx.filevault2_enable` | `0` |
 | `com.apple.mcx.filevault2_forceenableinsetupassistant` | `True` |
@@ -280,6 +339,7 @@ Configures FileVault disk encryption on macOS devices during Setup Assistant wit
 | `com.apple.mcx_dontallowfdeenable` | `False` |
 | `com.apple.security.fderecoverykeyescrow_location` | `https://user.manage.microsoft.com` |
 
+
 ### pol-sec-002-firewall (Policy)
 
 Enables macOS firewall and prevents users from accessing and modifying firewall settings through System Preferences, ensuring firewall configuration remains under IT control.
@@ -288,9 +348,10 @@ Enables macOS firewall and prevents users from accessing and modifying firewall 
 **Settings:** 2
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.preference.security_dontAllowFireWallUI` | `True` |
 | `com.apple.security.firewall_EnableFirewall` | `True` |
+
 
 ### pol-sec-003-gatekeeper (Policy)
 
@@ -300,11 +361,12 @@ Comprehensive Gatekeeper and system policy security configuration for macOS devi
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.systempolicy.control_AllowIdentifiedDevelopers` | `True` |
 | `com.apple.systempolicy.control_EnableAssessment` | `True` |
 | `com.apple.systempolicy.control_EnableXProtectMalwareUpload` | `True` |
 | `com.apple.systempolicy.managed_DisableOverride` | `True` |
+
 
 ### pol-sec-004-guest-account (Policy)
 
@@ -314,8 +376,9 @@ Disables guest account access to enhance security on managed macOS devices. Gues
 **Settings:** 1
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.mcx_disableguestaccount` | `True` |
+
 
 ### pol-sec-005-screensaver (Policy)
 
@@ -325,13 +388,14 @@ Configures comprehensive screensaver security settings to protect unattended dev
 **Settings:** 6
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.screensaver_askForPassword` | `True` |
 | `com.apple.screensaver_askForPasswordDelay` | `60` |
 | `com.apple.screensaver_loginWindowIdleTime` | `1200` |
 | `com.apple.screensaver_moduleName` | `Flurry` |
 | `com.apple.screensaver.user_idleTime` | `600` |
 | `com.apple.screensaver.user_moduleName` | `Flurry` |
+
 
 ### pol-sec-006-restrictions (Policy)
 
@@ -341,7 +405,7 @@ Comprehensive security policy for macOS devices that restricts various system fe
 **Settings:** 80
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.mcx_disableguestaccount` | `True` |
 | `com.apple.applicationaccess_allowaccountmodification` | `True` |
 | `com.apple.applicationaccess_allowactivitycontinuation` | `False` |
@@ -423,6 +487,7 @@ Comprehensive security policy for macOS devices that restricts various system fe
 | `com.apple.applicationaccess_forceondeviceonlydictation` | `True` |
 | `com.apple.applicationaccess_safariallowautofill` | `True` |
 
+
 ### pol-sec-007-recovery-lock (Policy)
 
 Enables Recovery Lock on Apple Silicon Macs to prevent unauthorized access to macOS Recovery. When enabled, a password is required to access Recovery mode, adding an additional layer of security against physical attacks and unauthorized system modifications. NOTE: this profile ships with the password rotation schedule set to 0, which means the Recovery Lock password is NEVER rotated automatically. For production, set a non-zero rotation period (for example 30, 60, or 90 days) so the escrowed password is refreshed on a schedule.
@@ -431,9 +496,10 @@ Enables Recovery Lock on Apple Silicon Macs to prevent unauthorized access to ma
 **Settings:** 2
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `setrecoverylock_enablerecoverylockpassword` | `True` |
 | `setrecoverylock_recoverylockpasswordrotationschedule` | `0` |
+
 
 ### pol-sys-100-ntp (Policy)
 
@@ -443,8 +509,9 @@ Configures macOS devices to synchronize time with Apple's official time servers 
 **Settings:** 1
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.mcx_timeserver` | `time.apple.com` |
+
 
 ### pol-sys-101-login-items (Policy)
 
@@ -454,7 +521,7 @@ Configures approved login items and background processes for macOS devices. Allo
 **Settings:** 8
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.servicemanagement_rules_item_comment` | `Palo Alto` |
 | `com.apple.servicemanagement_rules_item_ruletype` | `4` |
 | `com.apple.servicemanagement_rules_item_rulevalue` | `PXPZ95SK77` |
@@ -464,6 +531,7 @@ Configures approved login items and background processes for macOS devices. Allo
 | `com.apple.servicemanagement_rules_item_rulevalue` | `UBF8T346G9` |
 | `com.apple.servicemanagement_rules_item_teamidentifier` | `UBF8T346G9` |
 
+
 ### pol-sys-102-power (Policy)
 
 Configures power management and energy saver settings for macOS devices. Sets display sleep to 5 minutes and system sleep to 10 minutes for both desktop (AC power) and portable devices. Enables Wake on LAN for desktop computers to allow network-based device management and remote wake capabilities.
@@ -472,12 +540,13 @@ Configures power management and energy saver settings for macOS devices. Sets di
 **Settings:** 5
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `com.apple.mcx_com.apple.energysaver.desktop.acpower_display sleep timer` | `5` |
 | `com.apple.mcx_com.apple.energysaver.desktop.acpower_system sleep timer` | `10` |
 | `com.apple.mcx_com.apple.energysaver.desktop.acpower_wake on lan` | `1` |
 | `com.apple.mcx_com.apple.energysaver.portable.acpower_display sleep timer` | `5` |
 | `com.apple.mcx_com.apple.energysaver.portable.acpower_system sleep timer` | `10` |
+
 
 ### pol-sys-103-software-update (Policy)
 
@@ -487,7 +556,7 @@ Manages macOS software updates with automatic installation at 1:00 AM (3-day del
 **Settings:** 9
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `ddm-latestsoftwareupdate_enforcelatestsoftwareupdateversion` | `0` |
 | `ddm-latestsoftwareupdate_delayindays` | `3` |
 | `ddm-latestsoftwareupdate_installtime` | `01:00` |
@@ -498,6 +567,7 @@ Manages macOS software updates with automatic installation at 1:00 AM (3-day del
 | `softwareupdate_notifications` | `True` |
 | `softwareupdate_rapidsecurityresponse_enable` | `True` |
 
+
 ### pol-sys-104-ddm-passcode (Policy)
 
 Enforces passcode requirements including length, complexity, failed attempts, and expiration.
@@ -506,7 +576,7 @@ Enforces passcode requirements including length, complexity, failed attempts, an
 **Settings:** 11
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `passcode_changeatnextauth` | `False` |
 | `passcode_failedattemptsresetinminutes` | `0` |
 | `passcode_maximumgraceperiodinminutes` | `0` |
@@ -519,6 +589,7 @@ Enforces passcode requirements including length, complexity, failed attempts, an
 | `passcode_requirecomplexpasscode` | `True` |
 | `passcode_requirepasscode` | `True` |
 
+
 ### pol-sys-105-enrollment-restriction (EnrollmentRestriction)
 
 Controls macOS device enrollment settings and restrictions for managed devices. Allows both corporate and personal device enrollment. Use compliance policies for minimum OS version enforcement.
@@ -526,7 +597,20 @@ Controls macOS device enrollment settings and restrictions for managed devices. 
 **Source:** `configurations/intune/pol-sys-105-enrollment-restriction.json`  
 **Settings:** 0
 
-No payload settings discovered.
+_No payload settings discovered_
+
+
+### pol-sys-106-block-beta (Policy)
+
+Blocks enrollment in Apple beta OS programs and removes devices from any beta seed they are already on (Software Update Program Enrollment = AlwaysOff). No beta token required. Applies to supervised Macs on macOS 15.4+.
+
+**Source:** `configurations/intune/pol-sys-106-block-beta.json`  
+**Settings:** 1
+
+| Key | Value |
+|-----|-------|
+| `softwareupdate_beta_programenrollment` | `2` |
+
 
 ### scr-app-100-install-company-portal (Script)
 
@@ -536,11 +620,12 @@ Downloads and installs Microsoft Company Portal from a signed PKG. Automatically
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-101-install-edge (Script)
 
@@ -550,11 +635,12 @@ Downloads and installs Microsoft Edge from the official Microsoft download URL. 
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-102-install-remote-help (Script)
 
@@ -564,11 +650,12 @@ Downloads and installs Microsoft Remote Help from a signed PKG. Automatically in
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-103-install-intunelogwatch (Script)
 
@@ -578,11 +665,12 @@ Downloads the latest Intune Log Watch DMG from GitHub, mounts it, and copies Int
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-104-install-M365Apps (Script)
 
@@ -592,11 +680,12 @@ Downloads and installs Microsoft 365 Apps for Mac (Word, Excel, PowerPoint, Outl
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-105-install-windows-app (Script)
 
@@ -606,11 +695,12 @@ Downloads and installs Microsoft Windows App (formerly Remote Desktop) from the 
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-106-install-teams (Script)
 
@@ -620,11 +710,12 @@ Downloads and installs Microsoft Teams from the official Microsoft download URL.
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-app-107-M365copilot (Script)
 
@@ -634,11 +725,12 @@ Downloads and installs Microsoft 365 Copilot from the official Microsoft downloa
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-sec-100-install-escrow-buddy (Script)
 
@@ -648,11 +740,12 @@ Downloads and installs the latest release of Escrow Buddy security agent plugin 
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-sys-100-device-rename (Script)
 
@@ -662,11 +755,12 @@ Automatically renames Mac devices using a standardized naming convention based o
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-sys-101-configure-dock (Script)
 
@@ -676,11 +770,12 @@ Configures the macOS Dock with a standardized set of Microsoft 365 and system ap
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-sys-102-set-wallpaper (Script)
 
@@ -690,11 +785,12 @@ Downloads and sets a corporate desktop wallpaper for the currently logged-in use
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### scr-utl-100-dialog-onboarding (Script)
 
@@ -704,11 +800,12 @@ Displays an interactive Swift Dialog onboarding splash screen that monitors for 
 **Settings:** 4
 
 | Key | Value |
-| --- | ----- |
+|-----|-------|
 | `RunAsAccount` | `system` |
 | `BlockExecutionNotifications` | `true` |
 | `ExecutionFrequency` | `PT0S` |
 | `RetryCount` | `3` |
+
 
 ### wallpaper (Resource)
 
@@ -717,4 +814,6 @@ Sample corporate desktop wallpaper image used by the wallpaper deployment script
 **Source:** `resources/wallpaper.png`  
 **Settings:** 0
 
-No payload settings discovered.
+_No payload settings discovered_
+
+
