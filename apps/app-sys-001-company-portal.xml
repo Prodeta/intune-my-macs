@@ -9,7 +9,7 @@
   <SourceFile>apps/CompanyPortal-Installer.pkg</SourceFile>
   <Package>
     <PrimaryBundleId>com.microsoft.CompanyPortalMac</PrimaryBundleId>
-    <PrimaryBundleVersion>5.2604.1</PrimaryBundleVersion>
+    <PrimaryBundleVersion>5.2604.2</PrimaryBundleVersion>
     <Publisher>Microsoft Corporation</Publisher>
     <MinimumSupportedOperatingSystem>v15_0</MinimumSupportedOperatingSystem>
     <IgnoreVersionDetection>true</IgnoreVersionDetection>
