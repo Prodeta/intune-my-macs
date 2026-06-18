@@ -2,9 +2,9 @@
 
 ## Configuration Documentation
 
-**Generated:** June 15, 2026
+**Generated:** June 18, 2026
 
-**Total Artifacts:** 42
+**Total Artifacts:** 43
 
 # About Intune My Macs
 
@@ -43,9 +43,10 @@ Click any reference ID to jump to detailed configuration.
 | [cfg-sec-002-screensaver-idle](#cfg-sec-002-screensaver-idle-customconfig) | CustomConfig | 1 |
 | [cfg-sys-100-wallpaper-pppc](#cfg-sys-100-wallpaper-pppc-customconfig) | CustomConfig | 1 |
 | [cmp-cmp-001-macos-baseline](#cmp-cmp-001-macos-baseline-compliance) | Compliance | 12 |
-| [pol-app-100-office](#pol-app-100-office-policy) | Policy | 15 |
+| [pol-app-100-office](#pol-app-100-office-policy) | Policy | 22 |
 | [pol-app-101-company-portal-pppc](#pol-app-101-company-portal-pppc-policy) | Policy | 4 |
 | [pol-app-101-edge-level1](#pol-app-101-edge-level1-policy) | Policy | 22 |
+| [pol-app-104-onedrive-fda-pppc](#pol-app-104-onedrive-fda-pppc-policy) | Policy | 5 |
 | [pol-idp-001-platform-sso](#pol-idp-001-platform-sso-policy) | Policy | 16 |
 | [pol-sec-001-filevault](#pol-sec-001-filevault-policy) | Policy | 9 |
 | [pol-sec-002-firewall](#pol-sec-002-firewall-policy) | Policy | 2 |
@@ -221,14 +222,14 @@ Baseline compliance: FileVault required, Firewall enabled, SIP enabled, minimum 
 
 ### pol-app-100-office (Policy)
 
-Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activation, and Outlook experience settings. NOTE: AcknowledgedDataCollectionPolicy uses the integer/choice form (value 0 = required data only). MAU deprecated the legacy string form after early-2026 Office for Mac releases - only the numeric value is honoured; a string value silently reverts to the user default and re-prompts users.
+Microsoft 365 for Mac settings catalog: update channel/deadlines, auto sign-in, diagnostic data level, Office activation email, OneDrive Files On-Demand and Known Folder Move silent opt-in, fonts, and the new Outlook experience. The OneDrive KFM tenant placeholder (REPLACE_WITH_TENANT_ID) is substituted with the connected Entra tenant ID at deploy time; the {{mail}} token in OfficeActivationEmailAddress is resolved per-user by Intune. The Outlook DefaultEmailAddressOrDomain key is intentionally omitted - {{mail}} does not expand for it in a settings-catalog policy. AcknowledgedDataCollectionPolicy uses the numeric/choice form (1 = required data only) - MAU ignores the deprecated string form.
 
-**Source:** `configurations/intune/pol-app-100-office.json`  
-**Settings:** 15
+**Source:** `configurations/office/pol-app-100-office.json`  
+**Settings:** 22
 
 | Key | Value |
 |-----|-------|
-| `com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy` | `0` |
+| `com.apple.managedclient.preferences_acknowledgeddatacollectionpolicy` | `1` |
 | `com.apple.managedclient.preferences_updatedeadline.daysbeforeforcedquit` | `3` |
 | `com.apple.managedclient.preferences_disableinsidercheckbox` | `True` |
 | `com.apple.managedclient.preferences_howtocheck` | `0` |
@@ -240,9 +241,16 @@ Configures Microsoft 365 Office update, channel, auto sign-in, diagnostic, activ
 | `com.apple.managedclient.preferences_diagnosticdatatypepreference` | `1` |
 | `com.apple.managedclient.preferences_officeautosignin` | `True` |
 | `com.apple.managedclient.preferences_officeactivationemailaddress` | `{{mail}}` |
-| `com.apple.managedclient.preferences_defaultemailaddressordomain` | `{{mail}}` |
+| `com.apple.managedclient.preferences_kfmsilentoptin` | `REPLACE_WITH_TENANT_ID` |
+| `com.apple.managedclient.preferences_disabletutorial` | `True` |
+| `com.apple.managedclient.preferences_filesondemandenabled` | `True` |
+| `com.apple.managedclient.preferences_enableallocsiclients` | `True` |
+| `com.apple.managedclient.preferences_kfmsilentoptindesktop` | `True` |
+| `com.apple.managedclient.preferences_kfmsilentoptindocuments` | `True` |
+| `com.apple.managedclient.preferences_openatlogin` | `True` |
 | `com.apple.managedclient.preferences_enablenewoutlook` | `3` |
 | `com.apple.managedclient.preferences_userpreference_maxchecklistdisplaydurationmet` | `True` |
+| `com.apple.font_font` | `f015db7e-61f8-4882-8469-1b77f4efbb2c` |
 
 
 ### pol-app-101-company-portal-pppc (Policy)
@@ -291,6 +299,22 @@ Enhanced basic browser configuration for Microsoft Edge addressing gap analysis 
 | `com.apple.managedclient.preferences_diagnosticdata` | `1` |
 | `com.apple.managedclient.preferences_showhomebutton` | `True` |
 | `com.apple.managedclient.preferences_updatepolicyoverride` | `0` |
+
+
+### pol-app-104-onedrive-fda-pppc (Policy)
+
+Grants OneDrive (com.microsoft.OneDrive) Full Disk Access (SystemPolicyAllFiles) via a Privacy Preferences Policy Control (PPPC) settings-catalog profile. Pre-approves OneDrive access to protected file locations so file sync works without per-user TCC consent prompts.
+
+**Source:** `configurations/office/pol-app-104-onedrive-fda-pppc.json`  
+**Settings:** 5
+
+| Key | Value |
+|-----|-------|
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyallfiles_item_authorization` | `0` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyallfiles_item_coderequirement` | `identifier "com.microsoft.OneDrive" and anchor apple generic and certificate 1[field.1.2.840.113635.100.6.2.6] /* exi...` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyallfiles_item_identifier` | `com.microsoft.OneDrive` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyallfiles_item_identifiertype` | `0` |
+| `com.apple.tcc.configuration-profile-policy_services_systempolicyallfiles_item_staticcode` | `False` |
 
 
 ### pol-idp-001-platform-sso (Policy)
