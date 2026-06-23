@@ -1,0 +1,12 @@
+<MacIntuneManifest>
+  <ReferenceId>POL-SYS-101</ReferenceId>
+  <Version>1.0</Version>
+	<Type>Policy</Type>
+	<Name>POL-SYS-101 - Managed Login Items</Name>
+	<Description>Configures approved login items and background processes for macOS devices. Allows specific applications (Palo Alto and Microsoft) to run background services by whitelisting their team identifiers, ensuring only trusted applications can automatically start at login.</Description>
+	<Platform>macOS</Platform>
+	<Category>System Configuration</Category>
+	<SourceFile>configurations/intune/pol-sys-101-login-items.json</SourceFile>
+	  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>1</SettingsCount>
+</MacIntuneManifest>

@@ -1,0 +1,12 @@
+<MacIntuneManifest>
+  <ReferenceId>POL-SEC-002</ReferenceId>
+  <Version>1.0</Version>
+	<Type>Policy</Type>
+	<Name>POL-SEC-002 - Firewall</Name>
+	<Description>Enables macOS firewall and prevents users from accessing and modifying firewall settings through System Preferences, ensuring firewall configuration remains under IT control.</Description>
+	<Platform>macOS</Platform>
+	<Category>Security</Category>
+	<SourceFile>configurations/intune/pol-sec-002-firewall.json</SourceFile>
+	  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>2</SettingsCount>
+</MacIntuneManifest>

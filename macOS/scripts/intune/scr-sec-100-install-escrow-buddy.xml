@@ -1,0 +1,17 @@
+<MacIntuneManifest>
+  <ReferenceId>SCR-SEC-100</ReferenceId>
+  <Version>1.0</Version>
+  <Type>Script</Type>
+  <Name>SCR-SEC-100 - Install Escrow Buddy</Name>
+  <Description>Downloads and installs the latest release of Escrow Buddy security agent plugin from GitHub. Ensures FileVault recovery keys are properly escrowed to Intune by configuring the authorization database and triggering escrow at login when the FDE profile and PRK file are present.</Description>
+  <Platform>macOS</Platform>
+  <Category>Security</Category>
+  <SourceFile>scripts/intune/scr-sec-100-install-escrow-buddy.sh</SourceFile>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceShellScripts</CreateGraphUri>
+<Script>
+    <RunAsAccount>system</RunAsAccount>
+    <BlockExecutionNotifications>true</BlockExecutionNotifications>
+    <ExecutionFrequency>PT0S</ExecutionFrequency>
+    <RetryCount>3</RetryCount>
+  </Script>
+</MacIntuneManifest>

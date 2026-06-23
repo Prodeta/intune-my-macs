@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>PayloadContent</key>
+	<array>
+		<dict>
+			<key>AdminMayDisableMCX</key>
+			<false/>
+			<key>DisableFDEAutoLogin</key>
+			<true/>
+			<key>EnableExternalAccounts</key>
+			<false/>
+			<key>com.apple.login.mcx.DisableAutoLoginClient</key>
+			<true/>
+			<key>PayloadDisplayName</key>
+			<string>Login Window</string>
+			<key>PayloadIdentifier</key>
+			<string>com.apple.loginwindow.E20096C9-6BC3-485F-BD7E-B1060AE92D67</string>
+			<key>PayloadType</key>
+			<string>com.apple.loginwindow</string>
+			<key>PayloadUUID</key>
+			<string>E20096C9-6BC3-485F-BD7E-B1060AE92D67</string>
+			<key>PayloadVersion</key>
+			<integer>1</integer>
+		</dict>
+	</array>
+	<key>PayloadDisplayName</key>
+	<string>Secure Login Window Configuration</string>
+	<key>PayloadIdentifier</key>
+	<string>com.company.loginwindow.secure</string>
+	<key>PayloadType</key>
+	<string>Configuration</string>
+	<key>PayloadUUID</key>
+	<string>477B0AA3-FFDD-40C5-AA79-617D8C1059BE</string>
+	<key>PayloadVersion</key>
+	<integer>1</integer>
+</dict>
+</plist>

@@ -24,7 +24,7 @@ $importScripts              = $true
 $importCompliance           = $true  # new: compliance policies
 $importCustomAttrs          = $true  # new: custom attributes
 $importEnrollmentRestrictions = $true  # enrollment platform restrictions
-$includeMde                 = $false # include mde/ folder content only if --mde specified
+$includeMde                 = $false # include macOS/mde/ folder content only if --mde specified
 $applyChanges               = $false # require --apply to move beyond dry-run mode
 
 # Initialize created object trackers per run
@@ -49,6 +49,13 @@ $filterNames = @()
 $repoRoot = $PSScriptRoot
 if (-not $repoRoot) { $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path -ErrorAction Continue}
 if (-not $repoRoot) { Write-Error "Failed to resolve repository root; aborting."; exit 1 }
+
+# Distributed manifests now live under macOS/
+$macOSRoot = Join-Path $repoRoot 'macOS'
+if (-not (Test-Path -LiteralPath $macOSRoot)) {
+    Write-Error "macOS manifest folder not found: $macOSRoot"
+    exit 1
+}
 
 function Get-DefaultCreateGraphUri {
     param(
@@ -334,7 +341,7 @@ if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
     Write-Host "  --custom-attributes   Import only custom attributes"
     Write-Host "  --enrollment          Import only enrollment restrictions`n"
     Write-Host "OPTIONAL FEATURES:" -ForegroundColor Yellow
-    Write-Host "  --mde                 Include Microsoft Defender for Endpoint (mde/) folder content"
+    Write-Host "  --mde                 Include Microsoft Defender for Endpoint (macOS/mde/) folder content"
     Write-Host "  --show-all-scripts    Show all scripts during enumeration`n"
     Write-Host "MODIFICATION OPTIONS:" -ForegroundColor Yellow
     Write-Host "  --prefix `"VALUE`"      Set custom prefix for all created objects (default: '[intune-my-macs]')"
@@ -821,7 +828,7 @@ function Get-GroupIdByName {
     } catch { Write-Error "Failed to resolve group '$DisplayName': $($_.Exception.Message)"; return $null }
 }
 
-$distributedItems = Get-DistributedManifests -BasePath $repoRoot
+$distributedItems = Get-DistributedManifests -BasePath $macOSRoot
 
 # Always exclude 'exports/' folder content (output artifacts) regardless of switches
 $preExportsCount = $distributedItems.Count
@@ -831,14 +838,14 @@ if ($exportsRemoved -gt 0) { Write-Host "Excluded $exportsRemoved manifest item(
 
 if (-not $includeMde) {
     $pre = $distributedItems.Count
-    $distributedItems = $distributedItems | Where-Object { $_.filePath -notmatch '(^|/)mde/' }
+    $distributedItems = $distributedItems | Where-Object { $_.filePath -notmatch '(^|/)(macOS/)?mde/' }
     $removed = $pre - $distributedItems.Count
-    if ($removed -gt 0) { Write-Host "Excluded $removed mde/ manifest(s) (use --mde to include)." -ForegroundColor DarkGray }
+    if ($removed -gt 0) { Write-Host "Excluded $removed macOS/mde/ manifest(s) (use --mde to include)." -ForegroundColor DarkGray }
 } else {
-    Write-Host "Including mde/ manifests (--mde specified)." -ForegroundColor DarkGray
+    Write-Host "Including macOS/mde/ manifests (--mde specified)." -ForegroundColor DarkGray
     
     # Validate that the required MDE onboarding file exists
-    $mdeOnboardingFile = Join-Path $PSScriptRoot "mde/cfg-mde-001-onboarding.mobileconfig"
+    $mdeOnboardingFile = Join-Path $macOSRoot "mde/cfg-mde-001-onboarding.mobileconfig"
     if (-not (Test-Path $mdeOnboardingFile)) {
         Write-Host ""
         Write-Host "╔══════════════════════════════════════════════════════════════════════════════╗" -ForegroundColor Red
@@ -858,9 +865,9 @@ if (-not $includeMde) {
         Write-Host "  4. Select method: Mobile Device Management / Microsoft Intune" -ForegroundColor Cyan
         Write-Host "  5. Download the onboarding package" -ForegroundColor Cyan
         Write-Host "  6. Rename to: cfg-mde-001-onboarding.mobileconfig" -ForegroundColor Cyan
-        Write-Host "  7. Place in: mde/ folder" -ForegroundColor Cyan
+        Write-Host "  7. Place in: macOS/mde/ folder" -ForegroundColor Cyan
         Write-Host ""
-        Write-Host "For detailed instructions, see: mde/README.md" -ForegroundColor White
+        Write-Host "For detailed instructions, see: macOS/mde/README.md" -ForegroundColor White
         Write-Host ""
         Write-Error "Deployment stopped. Cannot proceed without MDE onboarding file."
         exit 1
@@ -1887,8 +1894,8 @@ if ($importPackages) {
     $createdAppIds = @()
 
     # Download latest Company Portal installer if the manifest references it
-    $cpPkgPath = Join-Path $repoRoot "apps/CompanyPortal-Installer.pkg"
-    $cpManifestExists = $distributedItems | Where-Object { $_.type -in @('Package','App','LobApp') -and $_.filePath -eq 'apps/CompanyPortal-Installer.pkg' }
+    $cpPkgPath = Join-Path $macOSRoot "apps/CompanyPortal-Installer.pkg"
+    $cpManifestExists = $distributedItems | Where-Object { $_.type -in @('Package','App','LobApp') -and $_.filePath -in @('macOS/apps/CompanyPortal-Installer.pkg','apps/CompanyPortal-Installer.pkg') }
     if ($cpManifestExists) {
         if (Test-Path -LiteralPath $cpPkgPath) {
             Remove-Item -LiteralPath $cpPkgPath -Force
@@ -1903,7 +1910,7 @@ if ($importPackages) {
             Write-Host ("✓ Downloaded CompanyPortal-Installer.pkg ({0:N1} MB)" -f $cpSize) -ForegroundColor Green
 
             # Extract version from pkg and update manifest XML
-            $cpManifestPath = Join-Path $repoRoot "apps/app-sys-001-company-portal.xml"
+            $cpManifestPath = Join-Path $macOSRoot "apps/app-sys-001-company-portal.xml"
             if (Test-Path -LiteralPath $cpManifestPath) {
                 $tmpDir = Join-Path ([System.IO.Path]::GetTempPath()) "cp_pkg_extract_$([System.Guid]::NewGuid().ToString('N'))"
                 try {

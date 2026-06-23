@@ -31,7 +31,7 @@ winget install Microsoft.PowerShell
 - **MDM Authority:** determines how you manage your devices (cannot be none). [Learn how](https://learn.microsoft.com/en-us/intune/intune-service/fundamentals/mdm-authority-set).
 - **APNS certificate:** Required for any macOS enrollment. [Learn how](https://learn.microsoft.com/mem/intune/enrollment/apple-mdm-push-certificate-get).
 - **Permissions:** Use an Intune Administrator (or equivalent) or grant `DeviceManagementConfiguration.ReadWrite.All`, `DeviceManagementApps.ReadWrite.All`, `DeviceManagementManagedDevices.ReadWrite.All`, `DeviceManagementScripts.ReadWrite.All`, `DeviceManagementServiceConfig.ReadWrite.All`, `Group.Read.All`.
-- **Optional MDE:** Download your org-specific onboarding file before using `--mde` (see [`mde/README.md`](mde/README.md) for detailed steps).
+- **Optional MDE:** Download your org-specific onboarding file before using `--mde` (see [`macOS/mde/README.md`](macOS/mde/README.md) for detailed steps).
 
 ### 3. Clone and run
 ```bash
@@ -68,7 +68,7 @@ pwsh ./mainScript.ps1 --assign-group "Intune Mac Pilot" --apply
 | `--apps`, `--config`, `--compliance`, `--scripts`, `--custom-attributes`, `--enrollment` | Limit the import scope to specific artifact types |
 | `--assign-group "Name"` | Assign every created object to an Entra group |
 | `--prefix "[custom]"` | Override the default naming prefix |
-| `--mde` | Include the `mde/` content (requires onboarding file) |
+| `--mde` | Include the `macOS/mde/` content (requires onboarding file) |
 | `--remove-all` | Delete previously created objects that use the current prefix |
 | `--tenant-id "GUID"` | Specify the Entra tenant ID for Microsoft Graph connection |
 | `--apply` | Actually create/update/delete Intune objects (otherwise it's a preview) |
@@ -88,7 +88,7 @@ pwsh ./mainScript.ps1 --tenant-id "12345678-1234-1234-1234-123456789012" --assig
 - **Compliance & scripts:** macOS compliance policy, enrollment restrictions, device scripts (Company Portal install, Dock customization, Escrow Buddy, etc.).
 - **Applications:** [Swift Dialog](https://github.com/swiftDialog/swiftDialog), Office 365, Teams, M365 Copilot, [Intune Log Watch](https://github.com/gilburns/IntuneLogWatch).
 - **Custom attributes:** Hardware compatibility checks and other helpers.
-- **Optional MDE:** Defender installer (see `mde/README.md`).
+- **Optional MDE:** Defender installer (see `macOS/mde/README.md`).
 
 For the full artifact catalog and settings, see `INTUNE-MY-MACS-DOCUMENTATION.md` or generate a fresh Word doc with `tools/Generate-ConfigurationDocumentation.py`.
 
@@ -111,7 +111,7 @@ The Entra Platform SSO policy (`configurations/entra/pol-idp-001-platform-sso.js
 
 ## Learn more
 - [`INTUNE-MY-MACS-DOCUMENTATION.md`](INTUNE-MY-MACS-DOCUMENTATION.md) – overview of every artifact.
-- [`mde/README.md`](mde/README.md) – Defender prerequisites and onboarding steps.
+- [`macOS/mde/README.md`](macOS/mde/README.md) – Defender prerequisites and onboarding steps.
 - [`tools/README.md`](tools/README.md) – Utilities such as documentation export, duplicate payload detection, and processing-order reports.
 
 ---

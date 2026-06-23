@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<MacIntuneManifest>
+  <ReferenceId>POL-SYS-106</ReferenceId>
+  <Version>1.0</Version>
+    <Type>Policy</Type>
+    <Name>POL-SYS-106 - Block Beta OS Versions</Name>
+    <Description>Blocks enrollment in Apple beta OS programs and removes devices from any beta seed they are already on (Software Update Program Enrollment = AlwaysOff). No beta token required. Applies to supervised Macs on macOS 15.4+.</Description>
+    <Platform>macOS</Platform>
+    <Category>Software Updates</Category>
+    <SourceFile>configurations/intune/pol-sys-106-block-beta.json</SourceFile>
+      <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>1</SettingsCount>
+</MacIntuneManifest>

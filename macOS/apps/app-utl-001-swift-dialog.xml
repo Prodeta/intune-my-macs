@@ -1,0 +1,18 @@
+<MacIntuneManifest>
+  <ReferenceId>APP-UTL-001</ReferenceId>
+  <Version>1.0</Version>
+  <Type>Package</Type>
+  <Name>APP-UTL-001 - Swift Dialog</Name>
+  <Description>Installs Swift Dialog v2.5.6, a native macOS application for displaying rich, interactive dialogs. This is a required dependency for the visual onboarding experience that provides users with real-time progress feedback during device provisioning and application installation.</Description>
+  <Platform>macOS</Platform>
+  <Category>Config</Category>
+  <SourceFile>apps/app-utl-001-swift-dialog.pkg</SourceFile>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceAppManagement/mobileApps</CreateGraphUri>
+<Package>
+    <PrimaryBundleId>au.csiro.dialog</PrimaryBundleId>
+    <PrimaryBundleVersion>2.5.6</PrimaryBundleVersion>
+    <Publisher>Bart Reardon</Publisher>
+    <MinimumSupportedOperatingSystem>v13_0</MinimumSupportedOperatingSystem>
+    <IgnoreVersionDetection>true</IgnoreVersionDetection>
+  </Package>
+</MacIntuneManifest>

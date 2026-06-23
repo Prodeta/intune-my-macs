@@ -1,0 +1,62 @@
+{
+    "@odata.context": "https://graph.microsoft.com/beta/$metadata#deviceManagement/configurationPolicies/$entity",
+    "createdDateTime": "2026-04-20T14:01:27.4334478Z",
+    "creationSource": null,
+    "description": "",
+    "lastModifiedDateTime": "2026-04-20T14:01:27.4334478Z",
+    "name": "Recovery Lock",
+    "platforms": "macOS",
+    "priorityMetaData": null,
+    "roleScopeTagIds": [
+        "0"
+    ],
+    "settingCount": 1,
+    "technologies": "mdm,appleRemoteManagement",
+    "id": "29b0a35f-1118-432c-a0a1-030d62170d27",
+    "templateReference": {
+        "templateId": "",
+        "templateFamily": "none",
+        "templateDisplayName": null,
+        "templateDisplayVersion": null
+    },
+    "settings": [
+        {
+            "id": "0",
+            "settingInstance": {
+                "@odata.type": "#microsoft.graph.deviceManagementConfigurationGroupSettingCollectionInstance",
+                "settingDefinitionId": "setrecoverylock_setrecoverylock",
+                "settingInstanceTemplateReference": null,
+                "auditRuleInformation": null,
+                "groupSettingCollectionValue": [
+                    {
+                        "settingValueTemplateReference": null,
+                        "children": [
+                            {
+                                "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+                                "settingDefinitionId": "setrecoverylock_enablerecoverylockpassword",
+                                "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
+                                "choiceSettingValue": {
+                                    "settingValueTemplateReference": null,
+                                    "value": "setrecoverylock_enablerecoverylockpassword_true",
+                                    "children": []
+                                }
+                            },
+                            {
+                                "@odata.type": "#microsoft.graph.deviceManagementConfigurationChoiceSettingInstance",
+                                "settingDefinitionId": "setrecoverylock_recoverylockpasswordrotationschedule",
+                                "settingInstanceTemplateReference": null,
+                                "auditRuleInformation": null,
+                                "choiceSettingValue": {
+                                    "settingValueTemplateReference": null,
+                                    "value": "setrecoverylock_recoverylockpasswordrotationschedule_0",
+                                    "children": []
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}
