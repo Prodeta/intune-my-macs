@@ -12,6 +12,8 @@ Basic help:
 Default behavior:
     - The script runs in dry-run mode unless you pass --apply.
     - Use --assign-group to assign newly created objects.
+    - Only one platform is processed per run.
+    - If --platform is not specified, macOS is used.
 
 Common examples:
     # Preview all changes (dry-run)
@@ -23,6 +25,9 @@ Common examples:
     # Target a specific tenant
     pwsh ./mainScript.ps1 --tenant-id "12345678-1234-1234-1234-123456789012" --assign-group "Intune Mac Pilot" --apply
 
+    # Target a specific platform
+    pwsh ./mainScript.ps1 --platform "Windows" --apply
+
     # Limit scope
     pwsh ./mainScript.ps1 --config --apply
     pwsh ./mainScript.ps1 --scripts --custom-attributes --apply
@@ -32,6 +37,9 @@ Common examples:
 
     # Remove all objects matching prefix (destructive)
     pwsh ./mainScript.ps1 --prefix "[intune-my-devices]" --remove-all --apply
+
+    # Remove all objects for a specific platform (destructive)
+    pwsh ./mainScript.ps1 --prefix "[intune-my-devices]" --remove-all --platform "Windows" --apply
 
 Main flags:
     Scope selectors:
@@ -57,6 +65,7 @@ Main flags:
         --assign-group "Name"
         --tenant-id "GUID"
         --names "Name 1,Name 2,Name 3"
+        --platform "macOS|Windows|iOS|Android"
 
     Help:
         -h
@@ -166,17 +175,32 @@ $tenantId = $null
 # GUI-supplied manifest name filter (comma-separated, set via --names)
 $filterNames = @()
 
+# Target platform (defaults to macOS if not provided)
+$selectedPlatform = 'macOS'
+
 # Resolve repo root (script is now in repository root)
 $repoRoot = $PSScriptRoot
 if (-not $repoRoot) { $repoRoot = Split-Path -Parent $MyInvocation.MyCommand.Path -ErrorAction Continue}
 if (-not $repoRoot) { Write-Error "Failed to resolve repository root; aborting."; exit 1 }
 
-# Distributed manifests now live under macOS/
-$macOSRoot = Join-Path $repoRoot 'macOS'
-if (-not (Test-Path -LiteralPath $macOSRoot)) {
-    Write-Error "macOS manifest folder not found: $macOSRoot"
+# Distributed manifests live under platform folders.
+# Always include macOS when present; include Windows/iOS/Android only if folders exist.
+$availablePlatformRoots = @{}
+foreach ($platformFolder in @('macOS','Windows','iOS','Android')) {
+    $candidateRoot = Join-Path $repoRoot $platformFolder
+    if (Test-Path -LiteralPath $candidateRoot) {
+        $availablePlatformRoots[$platformFolder] = $candidateRoot
+    }
+}
+if ($availablePlatformRoots.Count -eq 0) {
+    Write-Error "No platform folders found under repository root (expected one or more of: macOS, Windows, iOS, Android)."
     exit 1
 }
+
+# Active platform roots used for discovery/resolution (set after CLI parsing)
+$platformRoots = @{}
+
+$macOSRoot = $null
 
 function Resolve-ArtifactPath {
     param(
@@ -195,12 +219,16 @@ function Resolve-ArtifactPath {
         return $candidatePrimary
     }
 
-    # Backward compatibility: manifests may still use pre-restructure paths
+    # Backward compatibility: manifests may still use platform-relative paths
     # like 'configurations/...', 'apps/...', 'scripts/...', etc.
-    if ($normalized -notmatch '^(macOS/|\./macOS/)') {
-        $candidateMacOS = Join-Path $macOSRoot $normalized
-        if (Test-Path -LiteralPath $candidateMacOS) {
-            return $candidateMacOS
+    foreach ($platformRoot in $platformRoots.Values) {
+        $platformFolderName = Split-Path -Path $platformRoot -Leaf
+        if ($normalized -match "^(?:\./)?$([regex]::Escape($platformFolderName))/") {
+            continue
+        }
+        $candidatePlatform = Join-Path $platformRoot $normalized
+        if (Test-Path -LiteralPath $candidatePlatform) {
+            return $candidatePlatform
         }
     }
 
@@ -498,7 +526,8 @@ if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
     Write-Host "  --assign-group `"NAME`" Assign newly created objects to specified Entra group"
     Write-Host "  --tenant-id `"GUID`"    Specify tenant ID for Microsoft Graph connection"
     Write-Host "  --apply               Actually create/update/delete Intune objects (default: dry-run preview)"
-    Write-Host "  --remove-all          Delete all existing Intune objects with the configured prefix`n"
+    Write-Host "  --remove-all          Delete all existing Intune objects with the configured prefix"
+    Write-Host "  --platform `"VALUE`"    Target platform folder to deploy (macOS|Windows|iOS|Android). Default: macOS`n"
     Write-Host "HELP:" -ForegroundColor Yellow
     Write-Host "  -h, --help            Display this help message`n"
     Write-Host "EXAMPLES:" -ForegroundColor Yellow
@@ -520,8 +549,8 @@ if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
 }
 
 if ($args.Count -gt 0) {
-    $knownFlags = @('--apps','--config','--compliance','--scripts','--custom-attributes','--enrollment','--show-all-scripts','--remove-all','--mde','-mde','--apply','--prefix','--assign-group','--tenant-id','--names','--skip-terminal-verification','-h','--help')
-    $valueFlags = @('--prefix','--assign-group','--tenant-id','--names')
+    $knownFlags = @('--apps','--config','--compliance','--scripts','--custom-attributes','--enrollment','--show-all-scripts','--remove-all','--mde','-mde','--apply','--prefix','--assign-group','--tenant-id','--names','--platform','--skip-terminal-verification','-h','--help')
+    $valueFlags = @('--prefix','--assign-group','--tenant-id','--names','--platform')
     $unknownArgs = @(); $missingValueArgs = @()
     $idx = 0
     while ($idx -lt $args.Count) {
@@ -529,7 +558,7 @@ if ($args.Count -gt 0) {
         $normalized = $rawArg.ToLowerInvariant()
         $handled = $false
 
-        if ($normalized -like '--prefix=*' -or $normalized -like '--assign-group=*' -or $normalized -like '--tenant-id=*') {
+        if ($normalized -like '--prefix=*' -or $normalized -like '--assign-group=*' -or $normalized -like '--tenant-id=*' -or $normalized -like '--names=*' -or $normalized -like '--platform=*') {
             $handled = $true
         } elseif ($knownFlags -contains $normalized) {
             $handled = $true
@@ -625,6 +654,18 @@ if ($argsLower.Count -gt 0) {
         if ($null -ne $value) {
             $filterNames = $value.Trim('"') -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
         }
+
+        # --platform
+        if ($arg -like '--platform=*') {
+            $value = $arg.Substring(11)
+        } elseif ($arg -eq '--platform' -and ($i + 1) -lt $args.Count) {
+            $value = $args[$i + 1]
+        } else {
+            $value = $null
+        }
+        if ($null -ne $value) {
+            $selectedPlatform = $value.Trim('"')
+        }
     }
     if (-not ($importPolicies -or $importPackages -or $importScripts -or $importCompliance -or $importCustomAttrs -or $importEnrollmentRestrictions)) {
     Write-Warning "No valid selector provided (--apps, --config, --scripts, --custom-attributes, --enrollment). Defaulting to all."
@@ -634,6 +675,26 @@ if ($argsLower.Count -gt 0) {
         Write-Host ("Selection: configPolicies={0} compliance={1} packages={2} scripts={3} customAttributes={4} enrollmentRestrictions={5} showAllScripts={6} includeMde={7}" -f $importPolicies, $importCompliance, $importPackages, $importScripts, $importCustomAttrs, $importEnrollmentRestrictions, $showAllScripts, $includeMde) -ForegroundColor Cyan
     }
 }
+
+$platformMap = @{
+    'macos'   = 'macOS'
+    'windows' = 'Windows'
+    'ios'     = 'iOS'
+    'android' = 'Android'
+}
+$selectedPlatformKey = $selectedPlatform.ToLowerInvariant()
+if (-not $platformMap.ContainsKey($selectedPlatformKey)) {
+    Write-Error "Invalid --platform value '$selectedPlatform'. Valid values: macOS, Windows, iOS, Android."
+    exit 1
+}
+$selectedPlatformCanonical = $platformMap[$selectedPlatformKey]
+if (-not $availablePlatformRoots.ContainsKey($selectedPlatformCanonical)) {
+    Write-Error "Selected platform folder '$selectedPlatformCanonical' does not exist in this repository."
+    exit 1
+}
+$platformRoots = @{ $selectedPlatformCanonical = $availablePlatformRoots[$selectedPlatformCanonical] }
+$macOSRoot = if ($selectedPlatformCanonical -eq 'macOS') { $availablePlatformRoots['macOS'] } else { $null }
+Write-Host "Selected platform: $selectedPlatformCanonical" -ForegroundColor DarkGray
 
 if ($policyPrefix -and ($policyPrefix[-1] -ne ' ')) {
     $policyPrefix += ' '
@@ -706,10 +767,48 @@ if ($assignGroupName) {
 function Remove-IntunePrefixedContent {
     param(
         [string]$Prefix,
-        [bool]$ApplyChanges = $false
+        [bool]$ApplyChanges = $false,
+        [string]$Platform = 'macOS'
     )
     if (-not $Prefix) { Write-Error "Prefix is empty; refusing to continue."; return }
-    Write-Host "Scanning Intune for policies, custom configs (mobileconfig), compliance policies, enrollment restrictions, scripts, custom attributes, and apps beginning with prefix: '$Prefix'" -ForegroundColor Cyan
+    Write-Host "Scanning Intune for $Platform artifacts beginning with prefix: '$Prefix'" -ForegroundColor Cyan
+
+    if (-not $platformRoots.ContainsKey($Platform)) {
+        Write-Error "Selected platform '$Platform' is not available in this repository."
+        return
+    }
+
+    $platformManifestItems = @()
+    foreach ($platformRoot in ($platformRoots.Values | Sort-Object)) {
+        $platformManifestItems += Get-DistributedManifests -BasePath $platformRoot
+    }
+    if (-not $platformManifestItems -or $platformManifestItems.Count -eq 0) {
+        Write-Warning "No manifests discovered for platform '$Platform'. Refusing to run --remove-all to avoid cross-platform deletions."
+        return
+    }
+
+    $targetPolicyNames = @{}
+    $targetComplianceNames = @{}
+    $targetCustomConfigNames = @{}
+    $targetScriptNames = @{}
+    $targetCustomAttributeNames = @{}
+    $targetEnrollmentRestrictionNames = @{}
+    $targetAppNames = @{}
+
+    foreach ($m in $platformManifestItems) {
+        $displayName = "$Prefix$($m.name)"
+        switch ($m.type) {
+            'Policy'               { $targetPolicyNames[$displayName] = $true }
+            'Compliance'           { $targetComplianceNames[$displayName] = $true }
+            'CustomConfig'         { $targetCustomConfigNames[$displayName] = $true }
+            'Script'               { $targetScriptNames[$displayName] = $true }
+            'CustomAttribute'      { $targetCustomAttributeNames[$displayName] = $true }
+            'EnrollmentRestriction'{ $targetEnrollmentRestrictionNames[$displayName] = $true }
+            'Package'              { $targetAppNames[$displayName] = $true }
+            'App'                  { $targetAppNames[$displayName] = $true }
+            'LobApp'               { $targetAppNames[$displayName] = $true }
+        }
+    }
 
     # Build OData filter string for macOS custom configuration deviceConfiguration lookup
     $escapedFilterDeviceConfigs  = [System.Uri]::EscapeDataString("startsWith(displayName,'$Prefix')")
@@ -731,7 +830,9 @@ function Remove-IntunePrefixedContent {
             Write-Host "DEBUG: Looking for prefix: '$Prefix' (length: $($Prefix.Length))" -ForegroundColor DarkCyan
         }
         if ($allPolicies) {
-            $policies = $allPolicies | Where-Object { $_.name -and $_.name.StartsWith($Prefix) }
+            $policies = $allPolicies | Where-Object {
+                $_.name -and $_.name.StartsWith($Prefix) -and $targetPolicyNames.ContainsKey($_.name)
+            }
             if ($env:IMM_DEBUG -eq '1') { Write-Host "DEBUG: Client-side filter matched $($policies.Count) policies with prefix '$Prefix'" -ForegroundColor DarkCyan }
         }
         Write-Host " done ($($allPolicies.Count) found)" -ForegroundColor DarkGray
@@ -750,7 +851,9 @@ function Remove-IntunePrefixedContent {
             $allCompliance += $resp.value
         }
         if ($allCompliance) {
-            $compliancePolicies = $allCompliance | Where-Object { $_.displayName -and $_.displayName.StartsWith($Prefix) }
+            $compliancePolicies = $allCompliance | Where-Object {
+                $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetComplianceNames.ContainsKey($_.displayName)
+            }
         }
         Write-Host " done ($($allCompliance.Count) found)" -ForegroundColor DarkGray
     } catch {
@@ -769,8 +872,9 @@ function Remove-IntunePrefixedContent {
             if ($resp.value) { $raw += $resp.value }
         }
         if ($raw) {
-            # Some responses may omit @odata.type if not selected; also detect via payload-related properties
-            $customConfigs = $raw | Where-Object { ($_.displayName -and $_.displayName.StartsWith($Prefix)) -and ( $_.'@odata.type' -eq '#microsoft.graph.macOSCustomConfiguration' -or $_.PSObject.Properties.Name -contains 'payload' -or $_.PSObject.Properties.Name -contains 'payloadName') }
+            $customConfigs = $raw | Where-Object {
+                $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetCustomConfigNames.ContainsKey($_.displayName)
+            }
         }
         Write-Host " done" -ForegroundColor DarkGray
     } catch {
@@ -780,7 +884,11 @@ function Remove-IntunePrefixedContent {
             $raw = @(); $resp = Invoke-MgGraphRequest -Method GET -Uri "https://graph.microsoft.com/beta/deviceManagement/deviceConfigurations"
             if ($resp.value) { $raw += $resp.value }
             while ($resp.'@odata.nextLink') { $resp = Invoke-MgGraphRequest -Method GET -Uri $resp.'@odata.nextLink'; if ($resp.value) { $raw += $resp.value } }
-            if ($raw) { $customConfigs = $raw | Where-Object { $_.displayName -and $_.displayName.StartsWith($Prefix) -and ( $_.'@odata.type' -eq '#microsoft.graph.macOSCustomConfiguration' -or $_.PSObject.Properties.Name -contains 'payload' -or $_.PSObject.Properties.Name -contains 'payloadName') } }
+            if ($raw) {
+                $customConfigs = $raw | Where-Object {
+                    $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetCustomConfigNames.ContainsKey($_.displayName)
+                }
+            }
         } catch { Write-Warning "Fallback deviceConfigurations query failed: $($_.Exception.Message)" }
     }
     
@@ -794,7 +902,11 @@ function Remove-IntunePrefixedContent {
             $resp = Invoke-MgGraphRequest -Method GET -Uri $resp.'@odata.nextLink'
             $allScripts += $resp.value
         }
-        if ($allScripts) { $scripts = $allScripts | Where-Object { $_.displayName -and $_.displayName.StartsWith($Prefix) } }
+        if ($allScripts) {
+            $scripts = $allScripts | Where-Object {
+                $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetScriptNames.ContainsKey($_.displayName)
+            }
+        }
         Write-Host " done ($($allScripts.Count) found)" -ForegroundColor DarkGray
     } catch {
         Write-Host " failed" -ForegroundColor Red
@@ -811,7 +923,11 @@ function Remove-IntunePrefixedContent {
             $resp = Invoke-MgGraphRequest -Method GET -Uri $resp.'@odata.nextLink'
             $allCustomAttrs += $resp.value
         }
-        if ($allCustomAttrs) { $customAttrs = $allCustomAttrs | Where-Object { $_.displayName -and $_.displayName.StartsWith($Prefix) } }
+        if ($allCustomAttrs) {
+            $customAttrs = $allCustomAttrs | Where-Object {
+                $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetCustomAttributeNames.ContainsKey($_.displayName)
+            }
+        }
         Write-Host " done ($($allCustomAttrs.Count) found)" -ForegroundColor DarkGray
     } catch {
         Write-Host " failed" -ForegroundColor Red
@@ -828,7 +944,11 @@ function Remove-IntunePrefixedContent {
             $resp = Invoke-MgGraphRequest -Method GET -Uri $resp.'@odata.nextLink'
             $allEnrollRestrictions += $resp.value
         }
-        if ($allEnrollRestrictions) { $enrollmentRestrictions = $allEnrollRestrictions | Where-Object { $_.displayName -and $_.displayName.StartsWith($Prefix) } }
+        if ($allEnrollRestrictions) {
+            $enrollmentRestrictions = $allEnrollRestrictions | Where-Object {
+                $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetEnrollmentRestrictionNames.ContainsKey($_.displayName)
+            }
+        }
         Write-Host " done ($($allEnrollRestrictions.Count) found)" -ForegroundColor DarkGray
     } catch {
         Write-Host " failed" -ForegroundColor Red
@@ -845,7 +965,11 @@ function Remove-IntunePrefixedContent {
             $resp = Invoke-MgGraphRequest -Method GET -Uri $resp.'@odata.nextLink'
             $allApps += $resp.value
         }
-        if ($allApps) { $apps = $allApps | Where-Object { $_.displayName -and $_.displayName.StartsWith($Prefix) } }
+        if ($allApps) {
+            $apps = $allApps | Where-Object {
+                $_.displayName -and $_.displayName.StartsWith($Prefix) -and $targetAppNames.ContainsKey($_.displayName)
+            }
+        }
         Write-Host " done ($($allApps.Count) found)" -ForegroundColor DarkGray
     } catch {
         Write-Host " failed" -ForegroundColor Red
@@ -957,7 +1081,7 @@ function Remove-IntunePrefixedContent {
 }
 
 if ($removeAll) {
-    Remove-IntunePrefixedContent -Prefix $policyPrefix -ApplyChanges $applyChanges
+    Remove-IntunePrefixedContent -Prefix $policyPrefix -ApplyChanges $applyChanges -Platform $selectedPlatformCanonical
     return
 }
 
@@ -978,7 +1102,24 @@ function Get-GroupIdByName {
     } catch { Write-Error "Failed to resolve group '$DisplayName': $($_.Exception.Message)"; return $null }
 }
 
-$distributedItems = Get-DistributedManifests -BasePath $macOSRoot
+$distributedItems = @()
+foreach ($platformRoot in ($platformRoots.Values | Sort-Object)) {
+    $distributedItems += Get-DistributedManifests -BasePath $platformRoot
+}
+
+# Enforce single-platform deployment per run.
+$prePlatformFilterCount = $distributedItems.Count
+$distributedItems = @($distributedItems | Where-Object {
+    -not [string]::IsNullOrWhiteSpace($_.platform) -and $_.platform.Trim().ToLowerInvariant() -eq $selectedPlatformCanonical.ToLowerInvariant()
+})
+$platformFilteredOut = $prePlatformFilterCount - $distributedItems.Count
+if ($platformFilteredOut -gt 0) {
+    Write-Host "Excluded $platformFilteredOut manifest item(s) that do not match selected platform '$selectedPlatformCanonical'." -ForegroundColor DarkGray
+}
+if ($distributedItems.Count -eq 0) {
+    Write-Error "No manifests found for selected platform '$selectedPlatformCanonical'."
+    exit 1
+}
 
 # Always exclude 'exports/' folder content (output artifacts) regardless of switches
 $preExportsCount = $distributedItems.Count
@@ -992,6 +1133,10 @@ if (-not $includeMde) {
     $removed = $pre - $distributedItems.Count
     if ($removed -gt 0) { Write-Host "Excluded $removed macOS/mde/ manifest(s) (use --mde to include)." -ForegroundColor DarkGray }
 } else {
+    if (-not $macOSRoot) {
+        Write-Error "--mde was specified but macOS folder was not found in the repository."
+        exit 1
+    }
     Write-Host "Including macOS/mde/ manifests (--mde specified)." -ForegroundColor DarkGray
     
     # Validate that the required MDE onboarding file exists
@@ -2057,9 +2202,9 @@ if ($importPackages) {
     $createdAppIds = @()
 
     # Download latest Company Portal installer if the manifest references it
-    $cpPkgPath = Join-Path $macOSRoot "apps/CompanyPortal-Installer.pkg"
     $cpManifestExists = $distributedItems | Where-Object { $_.type -in @('Package','App','LobApp') -and $_.filePath -in @('macOS/apps/CompanyPortal-Installer.pkg','apps/CompanyPortal-Installer.pkg') }
-    if ($cpManifestExists) {
+    if ($macOSRoot -and $cpManifestExists) {
+        $cpPkgPath = Join-Path $macOSRoot "apps/CompanyPortal-Installer.pkg"
         if (Test-Path -LiteralPath $cpPkgPath) {
             Remove-Item -LiteralPath $cpPkgPath -Force
             Write-Host "Removed existing CompanyPortal-Installer.pkg" -ForegroundColor DarkGray
