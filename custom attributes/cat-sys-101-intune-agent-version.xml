@@ -7,7 +7,8 @@
   <Platform>macOS</Platform>
   <Category>Device Information</Category>
   <SourceFile>custom attributes/cat-sys-101-intune-agent-version.sh</SourceFile>
-  <CustomAttribute>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceCustomAttributeShellScripts</CreateGraphUri>
+<CustomAttribute>
     <CustomAttributeType>string</CustomAttributeType>
   </CustomAttribute>
 </MacIntuneManifest>

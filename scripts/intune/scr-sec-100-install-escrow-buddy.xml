@@ -7,7 +7,8 @@
   <Platform>macOS</Platform>
   <Category>Security</Category>
   <SourceFile>scripts/intune/scr-sec-100-install-escrow-buddy.sh</SourceFile>
-  <Script>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceShellScripts</CreateGraphUri>
+<Script>
     <RunAsAccount>system</RunAsAccount>
     <BlockExecutionNotifications>true</BlockExecutionNotifications>
     <ExecutionFrequency>PT0S</ExecutionFrequency>

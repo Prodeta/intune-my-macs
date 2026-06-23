@@ -7,4 +7,5 @@
   <Platform>macOS</Platform>
   <Category>Compliance</Category>
   <SourceFile>configurations/intune/cmp-cmp-001-macos-baseline.json</SourceFile>
+  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceCompliancePolicies</CreateGraphUri>
 </MacIntuneManifest>

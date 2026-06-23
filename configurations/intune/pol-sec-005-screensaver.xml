@@ -7,5 +7,6 @@
 	<Platform>macOS</Platform>
 	<Category>Security</Category>
 	<SourceFile>configurations/intune/pol-sec-005-screensaver.json</SourceFile>
-	<SettingsCount>2</SettingsCount>
+	  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>2</SettingsCount>
 </MacIntuneManifest>

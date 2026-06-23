@@ -7,5 +7,6 @@
   <Platform>macOS</Platform>
   <Category>Security</Category>
   <SourceFile>configurations/intune/pol-sys-104-ddm-passcode.json</SourceFile>
-  <SettingsCount>12</SettingsCount>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>12</SettingsCount>
 </MacIntuneManifest>

@@ -7,4 +7,5 @@
   <Platform>macOS</Platform>
   <Category>Config</Category>
   <SourceFile>configurations/intune/cfg-sys-100-wallpaper-pppc.mobileconfig</SourceFile>
+  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceConfigurations</CreateGraphUri>
 </MacIntuneManifest>

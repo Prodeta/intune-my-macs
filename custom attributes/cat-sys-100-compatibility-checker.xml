@@ -7,7 +7,8 @@
 	<Platform>macOS</Platform>
 	<Category>Device Information</Category>
 	<SourceFile>custom attributes/cat-sys-100-compatibility-checker.zsh</SourceFile>
-	<CustomAttribute>
+	  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceCustomAttributeShellScripts</CreateGraphUri>
+<CustomAttribute>
 		<CustomAttributeType>string</CustomAttributeType>
 	</CustomAttribute>
 </MacIntuneManifest>

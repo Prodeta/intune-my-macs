@@ -7,7 +7,8 @@
   <Platform>macOS</Platform>
   <Category>Config</Category>
   <SourceFile>apps/PSSOautofill.pkg</SourceFile>
-  <Package>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceAppManagement/mobileApps</CreateGraphUri>
+<Package>
     <PrimaryBundleId>com.intune.PSSOautofill</PrimaryBundleId>
     <PrimaryBundleVersion>1.0</PrimaryBundleVersion>
     <Publisher>Microsoft Corporation</Publisher>

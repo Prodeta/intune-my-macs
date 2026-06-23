@@ -11,9 +11,12 @@ This repository uses a distributed manifest model. Each deployable artifact (Pol
   <Platform>macOS</Platform>
   <Category>Identity|Security|Config|Restrictions|... (free text)</Category>
   <SourceFile>relative/path/to/source</SourceFile>
+  <CreateGraphUri>https://graph.microsoft.com/beta/.../collection</CreateGraphUri>
   <!-- Type specific subtree below -->
 </MacIntuneManifest>
 ```
+
+`CreateGraphUri` is the Microsoft Graph collection URI used to create the object (HTTP POST). This decouples endpoint routing from `mainScript.ps1`.
 
 ### Script Manifest (minimal required)
 ```xml
@@ -24,13 +27,13 @@ This repository uses a distributed manifest model. Each deployable artifact (Pol
   <Platform>macOS</Platform>
   <Category>Config</Category>
   <SourceFile>scripts/intune/example.sh</SourceFile>
+  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceShellScripts</CreateGraphUri>
   <Script>
     <RunAsAccount>system|user</RunAsAccount>
     <BlockExecutionNotifications>true|false</BlockExecutionNotifications>
     <ExecutionFrequency>PT0S|ISO8601 duration</ExecutionFrequency>
     <RetryCount>0-10</RetryCount>
   </Script>
-   </MacIntuneManifest>
 </MacIntuneManifest>
 ```
 Optional (previously present but now trimmed for scripts): DisplayName, FileName, PreInstallScript, PostInstallScript, bundle metadata. Keep these only if later tooling needs them.
@@ -44,6 +47,7 @@ Optional (previously present but now trimmed for scripts): DisplayName, FileName
   <Platform>macOS</Platform>
   <Category>Security</Category>
   <SourceFile>configurations/intune/policy.json</SourceFile>
+  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
   <SettingsCount>int</SettingsCount>
 </MacIntuneManifest>
 ```
@@ -57,6 +61,7 @@ Optional (previously present but now trimmed for scripts): DisplayName, FileName
   <Platform>macOS</Platform>
   <Category>Config</Category>
   <SourceFile>apps/Example.pkg</SourceFile>
+  <CreateGraphUri>https://graph.microsoft.com/beta/deviceAppManagement/mobileApps</CreateGraphUri>
   <Package>
     <DisplayName>...</DisplayName>
     <FileName>Example.pkg</FileName>
@@ -74,8 +79,10 @@ Optional (previously present but now trimmed for scripts): DisplayName, FileName
 ### Loader Behavior (`mainScript.ps1`)
 1. Recursively searches the repo for `*.xml` files containing `<MacIntuneManifest`.
 2. Parses metadata into in-memory objects.
-3. If any XML manifests are found, legacy `manifest.json` is ignored.
-4. For scripts & packages, if `FileName` is omitted it is inferred from `SourceFile`.
+3. Uses each item's `CreateGraphUri` when issuing Graph `POST` create requests.
+4. If `CreateGraphUri` is omitted, defaults are inferred by `Type` for backward compatibility.
+5. If any XML manifests are found, legacy `manifest.json` is ignored.
+6. For scripts & packages, if `FileName` is omitted it is inferred from `SourceFile`.
 
 ### Conventions
 - File naming: `artifactBaseName.xml` next to the source file (except packages may reside in `apps/`).

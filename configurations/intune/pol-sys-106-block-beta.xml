@@ -8,5 +8,6 @@
     <Platform>macOS</Platform>
     <Category>Software Updates</Category>
     <SourceFile>configurations/intune/pol-sys-106-block-beta.json</SourceFile>
-    <SettingsCount>1</SettingsCount>
+      <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>1</SettingsCount>
 </MacIntuneManifest>

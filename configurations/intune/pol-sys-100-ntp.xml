@@ -7,5 +7,6 @@
 	<Platform>macOS</Platform>
 	<Category>System Configuration</Category>
 	<SourceFile>configurations/intune/pol-sys-100-ntp.json</SourceFile>
-	<SettingsCount>1</SettingsCount>
+	  <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/configurationPolicies</CreateGraphUri>
+<SettingsCount>1</SettingsCount>
 </MacIntuneManifest>

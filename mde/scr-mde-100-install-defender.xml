@@ -7,7 +7,8 @@
   <Platform>macOS</Platform>
   <Category>Security</Category>
   <SourceFile>mde/scr-mde-100-install-defender.zsh</SourceFile>
-  <Script>
+    <CreateGraphUri>https://graph.microsoft.com/beta/deviceManagement/deviceShellScripts</CreateGraphUri>
+<Script>
     <RunAsAccount>system</RunAsAccount>
     <BlockExecutionNotifications>true</BlockExecutionNotifications>
     <ExecutionFrequency>PT0S</ExecutionFrequency>
