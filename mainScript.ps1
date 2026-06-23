@@ -31,7 +31,7 @@ Common examples:
     pwsh ./mainScript.ps1 --mde --apply
 
     # Remove all objects matching prefix (destructive)
-    pwsh ./mainScript.ps1 --prefix "[intune-my-macs]" --remove-all --apply
+    pwsh ./mainScript.ps1 --prefix "[intune-my-devices]" --remove-all --apply
 
 Main flags:
     Scope selectors:
@@ -158,7 +158,7 @@ function Show-CreatedObjectsSummary {
 }
 
 # set policy prefix (spacing appended automatically later)
-$policyPrefix = "[intune-my-macs]"
+$policyPrefix = "[intune-my-devices]"
 
 # tenant ID (optional, can be specified via --tenant-id)
 $tenantId = $null
@@ -176,6 +176,35 @@ $macOSRoot = Join-Path $repoRoot 'macOS'
 if (-not (Test-Path -LiteralPath $macOSRoot)) {
     Write-Error "macOS manifest folder not found: $macOSRoot"
     exit 1
+}
+
+function Resolve-ArtifactPath {
+    param(
+        [Parameter(Mandatory)] [string]$RelativePath
+    )
+
+    if ([string]::IsNullOrWhiteSpace($RelativePath)) { return $null }
+
+    $normalized = $RelativePath.Trim().Replace('\\', '/')
+    if ([System.IO.Path]::IsPathRooted($normalized)) {
+        return $normalized
+    }
+
+    $candidatePrimary = Join-Path $repoRoot $normalized
+    if (Test-Path -LiteralPath $candidatePrimary) {
+        return $candidatePrimary
+    }
+
+    # Backward compatibility: manifests may still use pre-restructure paths
+    # like 'configurations/...', 'apps/...', 'scripts/...', etc.
+    if ($normalized -notmatch '^(macOS/|\./macOS/)') {
+        $candidateMacOS = Join-Path $macOSRoot $normalized
+        if (Test-Path -LiteralPath $candidateMacOS) {
+            return $candidateMacOS
+        }
+    }
+
+    return $candidatePrimary
 }
 
 function Get-DefaultCreateGraphUri {
@@ -351,7 +380,7 @@ function Test-DistributedManifest {
                 }
                 foreach ($opt in 'preInstallScript','postInstallScript') {
                     if ($item.PSObject.Properties.Name -contains $opt -and $item.$opt) {
-                        $candidate = Join-Path $repoRoot $item.$opt
+                        $candidate = Resolve-ArtifactPath -RelativePath $item.$opt
                         if (-not (Test-Path -LiteralPath $candidate)) {
                             Write-Warning ("Package '{0}' references missing {1} file: {2}" -f $item.name, $opt, $item.$opt)
                         }
@@ -363,7 +392,7 @@ function Test-DistributedManifest {
                     if (-not $item.$req) { Write-Host ("CustomAttribute missing {0}: {1}" -f $req, $item.name) -ForegroundColor Red; $errors++ }
                 }
                 if ($item.filePath) {
-                    $full = Join-Path $repoRoot $item.filePath
+                    $full = Resolve-ArtifactPath -RelativePath $item.filePath
                     if (-not (Test-Path -LiteralPath $full)) { Write-Warning ("CustomAttribute file missing: {0}" -f $item.filePath) }
                 }
             }
@@ -372,7 +401,7 @@ function Test-DistributedManifest {
                     if (-not $item.$req) { Write-Host ("CustomConfig missing {0}: {1}" -f $req, $item.name) -ForegroundColor Red; $errors++ }
                 }
                 if ($item.filePath) {
-                    $full = Join-Path $repoRoot $item.filePath
+                    $full = Resolve-ArtifactPath -RelativePath $item.filePath
                     if (-not (Test-Path -LiteralPath $full)) { Write-Warning ("CustomConfig file missing: {0}" -f $item.filePath) }
                 }
             }
@@ -381,7 +410,7 @@ function Test-DistributedManifest {
                     if (-not $item.$req) { Write-Host ("EnrollmentRestriction missing {0}: {1}" -f $req, $item.name) -ForegroundColor Red; $errors++ }
                 }
                 if ($item.filePath) {
-                    $full = Join-Path $repoRoot $item.filePath
+                    $full = Resolve-ArtifactPath -RelativePath $item.filePath
                     if (-not (Test-Path -LiteralPath $full)) { Write-Warning ("EnrollmentRestriction file missing: {0}" -f $item.filePath) }
                 }
             }
@@ -450,7 +479,7 @@ $argsLower = $args | ForEach-Object { $_.ToLowerInvariant() }
 
 # Check for help flag
 if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
-    Write-Host "`nIntune My Macs Deployment Script" -ForegroundColor Cyan
+    Write-Host "`nIntune My Devices Deployment Script" -ForegroundColor Cyan
     Write-Host "================================`n" -ForegroundColor Cyan
     Write-Host "USAGE:" -ForegroundColor Yellow
     Write-Host "  ./mainScript.ps1 [OPTIONS]`n"
@@ -465,7 +494,7 @@ if ($argsLower -contains '-h' -or $argsLower -contains '--help') {
     Write-Host "  --mde                 Include Microsoft Defender for Endpoint (macOS/mde/) folder content"
     Write-Host "  --show-all-scripts    Show all scripts during enumeration`n"
     Write-Host "MODIFICATION OPTIONS:" -ForegroundColor Yellow
-    Write-Host "  --prefix `"VALUE`"      Set custom prefix for all created objects (default: '[intune-my-macs]')"
+    Write-Host "  --prefix `"VALUE`"      Set custom prefix for all created objects (default: '[intune-my-devices]')"
     Write-Host "  --assign-group `"NAME`" Assign newly created objects to specified Entra group"
     Write-Host "  --tenant-id `"GUID`"    Specify tenant ID for Microsoft Graph connection"
     Write-Host "  --apply               Actually create/update/delete Intune objects (default: dry-run preview)"
@@ -1656,7 +1685,8 @@ function Get-MissingReusableSettingIdsFromErrorMessage {
         [string]$Message
     )
     if ([string]::IsNullOrWhiteSpace($Message)) { return @() }
-    if ($Message -notmatch 'Reusable Settings are not found') { return @() }
+    # Backend responses vary in spacing/casing; accept broader patterns.
+    if ($Message -notmatch '(?i)Reusable\s+Settings\s+are\s+not\s+found') { return @() }
 
     $ids = [regex]::Matches($Message, '[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}') |
         ForEach-Object { $_.Value } |
@@ -1711,7 +1741,7 @@ if ($importPolicies) {
     Write-Host "Found $($policies.Count) policies:`n" -ForegroundColor Cyan
 
     foreach ($p in $policies) {
-        $policyPath = Join-Path $repoRoot $p.filePath
+        $policyPath = Resolve-ArtifactPath -RelativePath $p.filePath
         $exists = Test-Path -LiteralPath $policyPath
         $status = if ($exists) { 'OK' } else { 'MISSING' }
 
@@ -1759,7 +1789,12 @@ if ($importPolicies) {
                 try {
                     $policyImportResults = Invoke-MgGraphRequest -Method POST -Uri $p.createGraphUri -Body $policyContentJson
                 } catch {
-                    $errorMessage = $_ | Out-String
+                    $errorParts = @(
+                        $_.ErrorDetails.Message,
+                        $_.Exception.Message,
+                        ($_ | Out-String)
+                    ) | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+                    $errorMessage = ($errorParts -join "`n")
                     $missingReusableIds = Get-MissingReusableSettingIdsFromErrorMessage -Message $errorMessage
 
                     if (@($missingReusableIds).Count -gt 0) {
@@ -1802,7 +1837,7 @@ if ($importCompliance) {
     if ($distributedItems) { $compliance = $distributedItems | Where-Object { $_.type -eq 'Compliance' } }
     Write-Host "Found $($compliance.Count) compliance policies:`n" -ForegroundColor Cyan
     foreach ($c in $compliance) {
-        $compPath = Join-Path $repoRoot $c.filePath
+        $compPath = Resolve-ArtifactPath -RelativePath $c.filePath
         $exists = Test-Path -LiteralPath $compPath
         $status = if ($exists) { 'OK' } else { 'MISSING' }
         $desc = $c.description
@@ -1871,7 +1906,7 @@ if ($importScripts) {
     $scripts = $distributedItems | Where-Object { $_.type -eq 'Script' }
     Write-Host "Found $($scripts.Count) scripts:`n" -ForegroundColor Cyan
     foreach ($s in $scripts) {
-        $scriptPath = Join-Path $repoRoot $s.filePath
+        $scriptPath = Resolve-ArtifactPath -RelativePath $s.filePath
         $exists = Test-Path -LiteralPath $scriptPath
         $status = if ($exists) { 'OK' } else { 'MISSING' }
         $desc = $s.description
@@ -1930,7 +1965,7 @@ if ($importCustomAttrs) {
     $customAttributes = $distributedItems | Where-Object { $_.type -eq 'CustomAttribute' }
     Write-Host "Found $($customAttributes.Count) custom attributes:`n" -ForegroundColor Cyan
     foreach ($ca in $customAttributes) {
-        $scriptPath = Join-Path $repoRoot $ca.filePath
+        $scriptPath = Resolve-ArtifactPath -RelativePath $ca.filePath
         $exists = Test-Path -LiteralPath $scriptPath
         $status = if ($exists) { 'OK' } else { 'MISSING' }
         $desc = $ca.description
@@ -1983,7 +2018,7 @@ if ($importEnrollmentRestrictions) {
     if ($distributedItems) { $enrollmentRestrictions = $distributedItems | Where-Object { $_.type -eq 'EnrollmentRestriction' } }
     Write-Host "Found $($enrollmentRestrictions.Count) enrollment restriction(s):`n" -ForegroundColor Cyan
     foreach ($er in $enrollmentRestrictions) {
-        $erPath = Join-Path $repoRoot $er.filePath
+        $erPath = Resolve-ArtifactPath -RelativePath $er.filePath
         $exists = Test-Path -LiteralPath $erPath
         $status = if ($exists) { 'OK' } else { 'MISSING' }
         $desc = $er.description
@@ -2068,7 +2103,7 @@ if ($importPackages) {
     Write-Host "Found $($packages.Count) packages/apps:`n" -ForegroundColor Cyan
 
     foreach ($a in $packages) {
-        $assetPath = Join-Path $repoRoot $a.filePath
+        $assetPath = Resolve-ArtifactPath -RelativePath $a.filePath
         $exists = Test-Path -LiteralPath $assetPath
         $status = if ($exists) { 'OK' } else { 'MISSING' }
 
@@ -2112,7 +2147,7 @@ if ($importPackages) {
 
         # add preinstall script if needed
         if ($a.preInstallScript) {
-            $preinstallScript = Join-Path $repoRoot $a.preInstallScript
+            $preinstallScript = Resolve-ArtifactPath -RelativePath $a.preInstallScript
             if (-not (Test-Path -LiteralPath $preinstallScript)) {
                 Write-Warning "Pre-install script path not found: $($a.preInstallScript) (resolved: $preinstallScript). Will skip embedding."
                 $preinstallScript = $null
@@ -2125,7 +2160,7 @@ if ($importPackages) {
 
         # add postInstall script if needed
         if ($a.postInstallScript) {
-            $postInstallScript = Join-Path $repoRoot $a.postInstallScript
+            $postInstallScript = Resolve-ArtifactPath -RelativePath $a.postInstallScript
             if (-not (Test-Path -LiteralPath $postInstallScript)) {
                 Write-Warning "Post-install script path not found: $($a.postInstallScript) (resolved: $postInstallScript). Will skip embedding."
                 $postInstallScript = $null
@@ -2177,7 +2212,7 @@ if ($importPolicies) {
     if ($customConfigs.Count -gt 0) {
         Write-Host "Found $($customConfigs.Count) custom macOS configuration profile(s):`n" -ForegroundColor Cyan
         foreach ($cc in $customConfigs) {
-            $ccPath = Join-Path $repoRoot $cc.filePath
+            $ccPath = Resolve-ArtifactPath -RelativePath $cc.filePath
             $exists = Test-Path -LiteralPath $ccPath
             $status = if ($exists) { 'OK' } else { 'MISSING' }
             Write-Host "• $($cc.name)" -ForegroundColor Yellow
