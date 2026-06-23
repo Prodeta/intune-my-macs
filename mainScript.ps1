@@ -1,6 +1,68 @@
 # Requires: PowerShell 7+
 $ErrorActionPreference = 'Stop'
 
+<#
+HOW TO RUN
+
+Run from the repository root folder.
+
+Basic help:
+    pwsh ./mainScript.ps1 --help
+
+Default behavior:
+    - The script runs in dry-run mode unless you pass --apply.
+    - Use --assign-group to assign newly created objects.
+
+Common examples:
+    # Preview all changes (dry-run)
+    pwsh ./mainScript.ps1 --assign-group "Intune Mac Pilot"
+
+    # Apply all changes
+    pwsh ./mainScript.ps1 --assign-group "Intune Mac Pilot" --apply
+
+    # Target a specific tenant
+    pwsh ./mainScript.ps1 --tenant-id "12345678-1234-1234-1234-123456789012" --assign-group "Intune Mac Pilot" --apply
+
+    # Limit scope
+    pwsh ./mainScript.ps1 --config --apply
+    pwsh ./mainScript.ps1 --scripts --custom-attributes --apply
+
+    # Include MDE manifests under macOS/mde
+    pwsh ./mainScript.ps1 --mde --apply
+
+    # Remove all objects matching prefix (destructive)
+    pwsh ./mainScript.ps1 --prefix "[intune-my-macs]" --remove-all --apply
+
+Main flags:
+    Scope selectors:
+        --apps
+        --config
+        --compliance
+        --scripts
+        --custom-attributes
+        --enrollment
+
+    Optional features:
+        --mde
+        -mde
+        --show-all-scripts
+
+    Mutation/control:
+        --apply
+        --remove-all
+        --skip-terminal-verification
+
+    Value parameters (supports both --param value and --param=value):
+        --prefix "[custom]"
+        --assign-group "Name"
+        --tenant-id "GUID"
+        --names "Name 1,Name 2,Name 3"
+
+    Help:
+        -h
+        --help
+#>
+
 # Graph SDK modules will auto-load when needed
 # #requires -module Microsoft.Graph.Beta.Devices.CorporateManagement
 # #requires -module Microsoft.Graph.Authentication
@@ -35,6 +97,65 @@ $createdScriptIds = @()
 $createdAppIds = @()
 $createdCustomAttrIds = @()  # custom attributes
 $createdEnrollmentRestrictionIds = @()  # enrollment restrictions
+$createdObjects = @()
+
+function Add-CreatedObject {
+    param(
+        [Parameter(Mandatory)] [string]$Platform,
+        [Parameter(Mandatory)] [string]$Type,
+        [Parameter(Mandatory)] [string]$Name,
+        [Parameter(Mandatory)] [string]$Id
+    )
+
+    $normalizedPlatform = if ([string]::IsNullOrWhiteSpace($Platform)) { 'Unknown' } else { $Platform }
+    $script:createdObjects += [PSCustomObject]@{
+        platform = $normalizedPlatform
+        type     = $Type
+        name     = $Name
+        id       = $Id
+    }
+}
+
+function Show-CreatedObjectsSummary {
+    param(
+        [Parameter(Mandatory)] [array]$Objects
+    )
+
+    if (-not $Objects -or $Objects.Count -eq 0) {
+        Write-Host "No objects were created in this run." -ForegroundColor Yellow
+        return
+    }
+
+    $typeOrder = @('Policy','CustomConfig','Compliance','Script','CustomAttribute','EnrollmentRestriction','App')
+    $typeLabels = @{
+        Policy                = 'Policies'
+        CustomConfig          = 'Custom Configs'
+        Compliance            = 'Compliance Policies'
+        Script                = 'Scripts'
+        CustomAttribute       = 'Custom Attributes'
+        EnrollmentRestriction = 'Enrollment Restrictions'
+        App                   = 'Apps'
+    }
+
+    Write-Host ""
+    Write-Host "Created objects summary (by platform):" -ForegroundColor Cyan
+
+    foreach ($platformGroup in ($Objects | Group-Object platform | Sort-Object Name)) {
+        Write-Host ""
+        Write-Host ("{0}:" -f $platformGroup.Name) -ForegroundColor Cyan
+
+        foreach ($type in $typeOrder) {
+            $items = @($platformGroup.Group | Where-Object { $_.type -eq $type })
+            if ($items.Count -eq 0) { continue }
+
+            $label = $typeLabels[$type]
+            Write-Host ("{0} ({1}):" -f $label, $items.Count) -ForegroundColor Magenta
+            foreach ($item in ($items | Sort-Object name)) {
+                Write-Host ("• {0} [{1}]" -f $item.name, $item.id)
+            }
+        }
+    }
+}
 
 # set policy prefix (spacing appended automatically later)
 $policyPrefix = "[intune-my-macs]"
@@ -1660,6 +1781,7 @@ if ($importPolicies) {
                 if ($policyImportResults) {
                     Write-Host "  - Policy $($policyImportResults.name) imported successfully with ID: $($policyImportResults.id)" -ForegroundColor Green
                     $createdPolicyIds += $policyImportResults.id
+                    Add-CreatedObject -Platform $p.platform -Type 'Policy' -Name $policyImportResults.name -Id $policyImportResults.id
                 } else {
                     Write-Host "  - Policy import failed or returned no results." -ForegroundColor Red
                 }
@@ -1730,6 +1852,8 @@ if ($importCompliance) {
                 if ($resp -and $resp.id) {
                     Write-Host "  - Compliance policy imported with ID: $($resp.id)" -ForegroundColor Green
                     $createdComplianceIds += $resp.id
+                    $createdName = if ($resp.displayName) { $resp.displayName } else { $json.displayName }
+                    Add-CreatedObject -Platform $c.platform -Type 'Compliance' -Name $createdName -Id $resp.id
                 } else {
                     Write-Warning "  - Import returned no ID"
                 }
@@ -1787,6 +1911,7 @@ if ($importScripts) {
                 if ($result -and $result.id) { 
                     Write-Host "  - Script $($result.displayName) imported with ID: $($result.id)" -ForegroundColor Green 
                     $createdScriptIds += $result.id
+                    Add-CreatedObject -Platform $s.platform -Type 'Script' -Name $result.displayName -Id $result.id
                 } else { 
                     Write-Host "  - Script import failed (no ID)" -ForegroundColor Red 
                 }
@@ -1839,6 +1964,7 @@ if ($importCustomAttrs) {
                 if ($result -and $result.id) { 
                     Write-Host "  - Custom attribute $($result.displayName) imported with ID: $($result.id)" -ForegroundColor Green 
                     $createdCustomAttrIds += $result.id
+                    Add-CreatedObject -Platform $ca.platform -Type 'CustomAttribute' -Name $result.displayName -Id $result.id
                 } else { 
                     Write-Host "  - Custom attribute import failed (no ID)" -ForegroundColor Red 
                 }
@@ -1878,6 +2004,8 @@ if ($importEnrollmentRestrictions) {
                 if ($resp -and $resp.id) {
                     Write-Host "  - Enrollment restriction imported with ID: $($resp.id)" -ForegroundColor Green
                     $createdEnrollmentRestrictionIds += $resp.id
+                    $createdName = if ($resp.displayName) { $resp.displayName } else { $json.displayName }
+                    Add-CreatedObject -Platform $er.platform -Type 'EnrollmentRestriction' -Name $createdName -Id $resp.id
                 } else {
                     Write-Warning "  - Import returned no ID"
                 }
@@ -2032,7 +2160,12 @@ if ($importPackages) {
                 -includedApps $includedApps -minimumSupportedOperatingSystem $minimumSupportedOperatingSystem `
         -ignoreVersionDetection $ignoreVersionDetection -ChunkSizeMB 8 -MobileAppsUri $a.createGraphUri
     }
-    if ($appResult -and $appResult.id) { $createdAppIds += $appResult.id } else { Write-Warning "Could not capture app ID for: $displayName" }
+    if ($appResult -and $appResult.id) {
+        $createdAppIds += $appResult.id
+        Add-CreatedObject -Platform $a.platform -Type 'App' -Name $displayName -Id $appResult.id
+    } else {
+        Write-Warning "Could not capture app ID for: $displayName"
+    }
 
     }
 
@@ -2073,6 +2206,7 @@ if ($importPolicies) {
                     if ($resp -and $resp.id) {
                         Write-Host "  - Custom configuration imported with ID: $($resp.id)" -ForegroundColor Green
                         $createdDeviceConfigIds += $resp.id
+                        Add-CreatedObject -Platform $cc.platform -Type 'CustomConfig' -Name $displayName -Id $resp.id
                     } else {
                         Write-Warning "  - Import returned no ID"
                     }
@@ -2189,4 +2323,8 @@ if ($assignGroupName) {
             Write-Host "Skipping enrollment restriction assignments (none imported)." -ForegroundColor DarkGray
         }
     }
+}
+
+if ($applyChanges) {
+    Show-CreatedObjectsSummary -Objects $createdObjects
 }
