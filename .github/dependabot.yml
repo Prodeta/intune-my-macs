@@ -1,0 +1,25 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# Dependabot configuration for intune-my-macs.
+#
+# Only first-party dependency manifests are listed. The single Python tool in
+# this repository (tools/Generate-ConfigurationDocumentation.py) declares its
+# dependencies in tools/requirements.txt, so the pip ecosystem is watched there.
+# The PowerShell deployment scripts install the Microsoft Graph SDK at runtime
+# from the public PowerShell Gallery (no committed manifest), so there is no
+# ecosystem for Dependabot to monitor for them.
+#
+# When GitHub Actions workflows are added under .github/workflows/, add a
+# "github-actions" entry here so the actions are kept up to date as well.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/tools"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+    commit-message:
+      prefix: "chore(deps)"
