@@ -1,0 +1,22 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT License.
+#
+# CODEOWNERS — review routing for intune-my-macs.
+# Syntax: https://docs.github.com/repositories/managing-your-repositories-permissions-and-settings/customizing-your-repository/about-code-owners
+#
+# Owners listed here are automatically requested for review on matching paths.
+# Per the OSPO durable-owner standard, the repo keeps two direct owners.
+
+# Default owners for everything in the repo
+*                       @theneiljohnson @CKunze-MSFT
+
+# Deployment engine and GUI
+/mainScript.ps1         @theneiljohnson @CKunze-MSFT
+/Start-IntuneMyMacs.ps1 @theneiljohnson @CKunze-MSFT
+
+# Agent context, standards, and developer tooling
+/AGENTS.md              @theneiljohnson @CKunze-MSFT
+/docs/                  @theneiljohnson @CKunze-MSFT
+/standards/             @theneiljohnson @CKunze-MSFT
+/tools/                 @theneiljohnson @CKunze-MSFT
+/.github/               @theneiljohnson @CKunze-MSFT

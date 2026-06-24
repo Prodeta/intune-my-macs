@@ -96,6 +96,16 @@ Regenerate it whenever artifacts change and commit the result.
 - Commit in small, logical units (one concern per commit). Never use
   `--no-verify`; never force-push or `git reset --hard` published commits.
 
+## Ownership & maintenance
+
+- Review ownership is defined in [../.github/CODEOWNERS](../.github/CODEOWNERS);
+  the repo keeps **two** direct owners per the OSPO durable-owner standard.
+- Agent-context files (`AGENTS.md`, `docs/`, `standards/`, the Copilot
+  instructions) are reviewed whenever the artifacts or workflow they describe
+  change; the release checklist
+  ([../.github/prompts/ship.prompt.md](../.github/prompts/ship.prompt.md)) is the
+  cadence that keeps them current.
+
 ## Validate before pushing
 
 Run the local loop:
