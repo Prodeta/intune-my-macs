@@ -135,7 +135,7 @@
                 "simpleSettingValue": {
                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                     "settingValueTemplateReference": null,
-                    "value": "https://outlook.office.com"
+                    "value": "m365.cloud.microsoft"
                 }
             }
         },
@@ -148,7 +148,7 @@
                 "simpleSettingValue": {
                     "@odata.type": "#microsoft.graph.deviceManagementConfigurationStringSettingValue",
                     "settingValueTemplateReference": null,
-                    "value": "https://outlook.office.com"
+                    "value": "m365.cloud.microsoft"
                 }
             }
         },
